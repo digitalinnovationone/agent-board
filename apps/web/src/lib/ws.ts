@@ -1,6 +1,7 @@
 import type { WsEvent } from '@agent-board/types';
 
 type Listener = (event: WsEvent) => void;
+type StatusListener = (connected: boolean) => void;
 
 const WS_URL = 'ws://localhost:4000/ws';
 
@@ -8,14 +9,17 @@ let socket: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelay = 500;
 const listeners = new Set<Listener>();
-let onStatusChange: ((connected: boolean) => void) | null = null;
+let statusListener: StatusListener | null = null;
 
 function connect() {
+  // Guard against double-connect (React StrictMode fires effects twice)
+  if (socket && socket.readyState < 2) return;
+
   socket = new WebSocket(WS_URL);
 
   socket.addEventListener('open', () => {
     reconnectDelay = 500;
-    onStatusChange?.(true);
+    statusListener?.(true);
   });
 
   socket.addEventListener('message', (ev) => {
@@ -31,11 +35,12 @@ function connect() {
 
   socket.addEventListener('close', () => {
     socket = null;
-    onStatusChange?.(false);
+    statusListener?.(false);
     scheduleReconnect();
   });
 
   socket.addEventListener('error', () => {
+    // close will fire immediately after, which handles reconnect
     socket?.close();
   });
 }
@@ -54,8 +59,8 @@ export const ws = {
     connect();
   },
 
-  onStatus(cb: (connected: boolean) => void) {
-    onStatusChange = cb;
+  onStatus(cb: StatusListener) {
+    statusListener = cb;
   },
 
   subscribe(listener: Listener): () => void {

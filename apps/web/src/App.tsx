@@ -113,7 +113,7 @@ export default function App() {
       </div>
 
       {/* Status bar */}
-      <StatusBar status={state.status} wsConnected={state.wsConnected} />
+      <StatusBar status={state.status} wsState={state.wsState} />
 
       {/* Overlays */}
       {state.uiOpenModal === 'new-card' && (

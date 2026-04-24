@@ -1,9 +1,12 @@
 import { useReducer, useCallback } from 'react';
 import type { Agent, Card, CardDetail, StatusSnapshot, WsEvent } from '@agent-board/types';
 
+export type WsState = 'connecting' | 'connected' | 'disconnected';
+
 export interface AppState {
   status: StatusSnapshot;
   wsConnected: boolean;
+  wsState: WsState;
   agents: Record<string, Agent>;
   cards: Record<string, Card>;
   cardDetails: Record<string, CardDetail>;
@@ -25,6 +28,7 @@ const initialStatus: StatusSnapshot = {
 export const initialState: AppState = {
   status: initialStatus,
   wsConnected: false,
+  wsState: 'connecting',
   agents: {},
   cards: {},
   cardDetails: {},
@@ -55,7 +59,11 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_STATUS':
       return { ...state, status: action.payload };
     case 'SET_WS_CONNECTED':
-      return { ...state, wsConnected: action.connected };
+      return {
+        ...state,
+        wsConnected: action.connected,
+        wsState: action.connected ? 'connected' : 'disconnected',
+      };
     case 'SET_AGENTS': {
       const agents: Record<string, Agent> = {};
       for (const a of action.agents) agents[a.id] = a;
