@@ -125,6 +125,7 @@ export default function App() {
       {state.uiOpenCardId && (
         <CardDetailDrawer
           cardId={state.uiOpenCardId}
+          agents={state.agents}
           onClose={() => dispatch({ type: 'CLOSE_CARD' })}
         />
       )}
