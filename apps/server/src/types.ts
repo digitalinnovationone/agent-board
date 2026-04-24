@@ -15,4 +15,11 @@ export type {
   WsEvent,
 } from '@agent-board/types';
 
-export { COLUMNS } from '@agent-board/types';
+export const COLUMNS = [
+  'Backlog',
+  'Specification',
+  'Development',
+  'Testing',
+  'Deploy',
+  'Done',
+] as const;

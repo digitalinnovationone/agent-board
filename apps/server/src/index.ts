@@ -4,6 +4,7 @@ import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 import './db.js';
 import { seedAgents } from './seed.js';
+import { startOrchestrator } from './agents/orchestrator.js';
 import { registerWs } from './ws.js';
 import { statusRoutes } from './routes/status.js';
 import { agentRoutes } from './routes/agents.js';
@@ -22,6 +23,7 @@ await app.register(cardRoutes);
 await app.register(commentRoutes);
 
 seedAgents();
+startOrchestrator();
 
 try {
   await app.listen({ port: 4000, host: '127.0.0.1' });
