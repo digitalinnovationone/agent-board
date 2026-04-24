@@ -25,12 +25,15 @@ export function Column({ column, cards, agents, onCardClick }: Props) {
 
   const owners = Object.values(agents).filter((a) => a.ownsColumn === column);
 
+  // Find which agent is currently working on each card
+  const workingAgents = Object.values(agents).filter((a) => a.status === 'working');
+
   return (
     <div className="column">
       <div className="column-header">
         <div className="column-header-left">
           <span className="column-title">{column}</span>
-          <span className="column-count">{count}</span>
+          {count > 0 && <span className="column-count">{count}</span>}
         </div>
         {cap < 999 && (
           <span className={`wip-badge${over ? ' over' : ''}`}>
@@ -42,7 +45,7 @@ export function Column({ column, cards, agents, onCardClick }: Props) {
       {owners.length > 0 && (
         <div className="column-owner">
           {owners.map((a) => (
-            <AgentChip key={a.id} glyph={a.glyph} hue={a.hue} size={20} />
+            <AgentChip key={a.id} glyph={a.glyph} hue={a.hue} size={18} />
           ))}
           <span className="column-owner-name">
             {owners.map((a) => a.name).join(' + ')}
@@ -51,14 +54,18 @@ export function Column({ column, cards, agents, onCardClick }: Props) {
       )}
 
       <div className="column-body">
-        {cards.map((card) => (
-          <Card
-            key={card.id}
-            card={card}
-            agents={agents}
-            onClick={() => onCardClick(card.id)}
-          />
-        ))}
+        {cards.map((card) => {
+          const worker = workingAgents.find((a) => a.status === 'working');
+          return (
+            <Card
+              key={card.id}
+              card={card}
+              agents={agents}
+              workingAgentId={worker?.id}
+              onClick={() => onCardClick(card.id)}
+            />
+          );
+        })}
       </div>
     </div>
   );
