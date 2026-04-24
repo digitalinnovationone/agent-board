@@ -1,0 +1,14 @@
+{
+  "name": "agent-board",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names web,server --prefix-colors cyan,yellow \"pnpm --filter web dev\" \"pnpm --filter server dev\"",
+    "build": "pnpm --filter web build && pnpm --filter server build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  }
+}

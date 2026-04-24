@@ -1,0 +1,133 @@
+/* Agent Board — Graphite design tokens
+   --------------------------------------------------------------------
+   CSS custom properties. Import this once at the root of your app:
+       @import url("./graphite.css");
+   Then consume via var(--g-color-text), var(--g-radius-xl), etc.
+   Stays 1:1 with graphite.tokens.json.
+-------------------------------------------------------------------- */
+
+:root {
+  /* — Color · neutrals ———————————————————————————————————— */
+  --g-color-bg:            #fafafa;  /* app background */
+  --g-color-surface:       #ffffff;  /* panels, cards, headers */
+  --g-color-surface-2:     #f4f4f5;  /* column bodies, chip bg */
+  --g-color-surface-3:     #fafafa;  /* composer footer strip */
+
+  --g-color-border:        #e4e4e7;
+  --g-color-border-strong: #d4d4d8;  /* interactive outlines */
+
+  --g-color-text:          #18181b;
+  --g-color-text-2:        #52525b;
+  --g-color-text-3:        #a1a1aa;
+
+  /* — Color · accent (violet) ——————————————————————————————— */
+  --g-color-accent:        #7c3aed;
+  --g-color-accent-bg:     #f5f3ff;
+  --g-color-accent-border: #ddd6fe;
+
+  /* — Color · warn (amber) — blocked states ————————————————— */
+  --g-color-warn:          #b45309;
+  --g-color-warn-bg:       #fef3c7;
+  --g-color-warn-border:   #fcd34d;
+
+  /* — Color · ok (emerald) — connected, success ——————————————— */
+  --g-color-ok:            #059669;
+  --g-color-ok-bg:         #ecfdf5;
+
+  /* — Modal/drawer scrim —————————————————————————————————— */
+  --g-color-scrim:         rgba(24, 24, 27, 0.22);
+
+  /* — Agent hues (oklch H component) ——————————————————————————
+     Render a chip:
+       background: oklch(0.97 0.02 var(--g-agent-H));
+       color:      oklch(0.48 0.16 var(--g-agent-H));
+  ————————————————————————————————————————————————————————— */
+  --g-agent-planner:  260;
+  --g-agent-scribe:   200;
+  --g-agent-forge:    30;
+  --g-agent-loom:     160;
+  --g-agent-sentinel: 340;
+  --g-agent-pilot:    100;
+
+  /* — Typography ———————————————————————————————————————— */
+  --g-font-sans: "Geist", "Inter", -apple-system, system-ui, sans-serif;
+  --g-font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --g-text-xs:   10.5px;  /* meta, tags, timestamps */
+  --g-text-sm:   11.5px;  /* secondary UI, chips    */
+  --g-text-base: 13px;    /* body, card titles      */
+  --g-text-md:   13.5px;  /* descriptions           */
+  --g-text-lg:   15px;    /* modal section titles   */
+  --g-text-xl:   22px;    /* drawer headings        */
+
+  --g-weight-regular:  400;
+  --g-weight-medium:   500;
+  --g-weight-semibold: 600;
+  --g-weight-bold:     700;
+
+  --g-tracking-tight:   -0.4px;
+  --g-tracking-default: -0.1px;
+  --g-tracking-wide:     0.3px;
+  --g-tracking-wider:    0.5px;
+
+  --g-leading-tight:    1.2;
+  --g-leading-snug:     1.35;
+  --g-leading-default:  1.45;
+  --g-leading-relaxed:  1.55;
+
+  /* — Spacing ———————————————————————————————————————— */
+  --g-space-0: 0;
+  --g-space-1: 4px;
+  --g-space-2: 6px;
+  --g-space-3: 8px;
+  --g-space-4: 10px;
+  --g-space-5: 12px;
+  --g-space-6: 14px;
+  --g-space-7: 16px;
+  --g-space-8: 20px;
+  --g-space-9: 24px;
+
+  /* — Radius ——————————————————————————————————————————— */
+  --g-radius-sm:   3px;    /* inline badges             */
+  --g-radius-md:   5px;    /* buttons, filter pills     */
+  --g-radius-lg:   6px;    /* header buttons            */
+  --g-radius-xl:   8px;    /* cards, callouts, inputs   */
+  --g-radius-2xl:  10px;   /* major panels              */
+  --g-radius-full: 9999px; /* dots, stepper nodes       */
+
+  /* — Border widths ——————————————————————————————————————— */
+  --g-border-hair:   1px;
+  --g-border-medium: 1.5px;
+  --g-border-strong: 2px;
+
+  /* — Shadows —————————————————————————————————————————— */
+  --g-shadow-live-ring: 0 0 0 3px rgba(124, 58, 237, 0.06);
+  --g-shadow-drawer:    -16px 0 40px rgba(24, 24, 27, 0.08);
+
+  /* — Layout ——————————————————————————————————————————— */
+  --g-rail-agents:    220px;
+  --g-rail-activity:  280px;
+  --g-rail-collapsed: 32px;
+  --g-drawer-w:       560px;
+  --g-modal-w:        640px;
+  --g-column-gap:     12px;
+  --g-stage-padding:  14px;
+
+  /* — Motion ——————————————————————————————————————————— */
+  --g-pulse:      1.4s ease-in-out infinite;
+  --g-pulse-slow: 1.6s ease-in-out infinite;
+}
+
+/* Pulse keyframes used across live indicators */
+@keyframes g-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* Example utility: live dot */
+.g-dot-live {
+  width: 6px; height: 6px; border-radius: var(--g-radius-full);
+  background: var(--g-color-accent);
+  animation: g-pulse var(--g-pulse);
+  display: inline-block;
+}

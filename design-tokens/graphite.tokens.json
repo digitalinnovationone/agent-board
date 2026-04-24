@@ -1,0 +1,134 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$metadata": {
+    "name": "Agent Board — Graphite",
+    "version": "1.0.0",
+    "description": "Design tokens for the Graphite direction of the Agent Board. Zinc neutrals, violet accent, Geist type."
+  },
+
+  "color": {
+    "bg":             { "$value": "#fafafa", "$type": "color", "$description": "App background (zinc-50)" },
+    "surface":        { "$value": "#ffffff", "$type": "color", "$description": "Elevated surfaces: panels, cards, headers" },
+    "surface-2":      { "$value": "#f4f4f5", "$type": "color", "$description": "Inset surfaces: column bodies, chip backgrounds (zinc-100)" },
+    "surface-3":      { "$value": "#fafafa", "$type": "color", "$description": "Composer footer strip" },
+
+    "border":         { "$value": "#e4e4e7", "$type": "color", "$description": "Default 1px borders (zinc-200)" },
+    "border-strong":  { "$value": "#d4d4d8", "$type": "color", "$description": "Interactive borders: checkbox outlines (zinc-300)" },
+
+    "text":           { "$value": "#18181b", "$type": "color", "$description": "Primary text (zinc-900)" },
+    "text-2":         { "$value": "#52525b", "$type": "color", "$description": "Secondary text, subtitles (zinc-600)" },
+    "text-3":         { "$value": "#a1a1aa", "$type": "color", "$description": "Tertiary: meta, placeholders, IDs (zinc-400)" },
+
+    "accent":         { "$value": "#7c3aed", "$type": "color", "$description": "Violet-600 — agent activity, primary actions, active states" },
+    "accent-bg":      { "$value": "#f5f3ff", "$type": "color", "$description": "Violet-50 — card fills for live work" },
+    "accent-border":  { "$value": "#ddd6fe", "$type": "color", "$description": "Violet-200 — card borders for live work" },
+
+    "warn":           { "$value": "#b45309", "$type": "color", "$description": "Amber-700 — blocked text, warnings" },
+    "warn-bg":        { "$value": "#fef3c7", "$type": "color", "$description": "Amber-100 — blocked card fills" },
+    "warn-border":    { "$value": "#fcd34d", "$type": "color", "$description": "Amber-300 — blocked card borders" },
+
+    "ok":             { "$value": "#059669", "$type": "color", "$description": "Emerald-600 — connected, success, completed criteria" },
+    "ok-bg":          { "$value": "#ecfdf5", "$type": "color", "$description": "Emerald-50 — completed pipeline steps" }
+  },
+
+  "agent-hue": {
+    "$description": "Each agent gets an identity hue applied via oklch(L C H). Lightness and chroma are fixed; hue varies. Used for 22px agent chips: background oklch(0.97 0.02 H), glyph stroke oklch(0.48 0.16 H).",
+    "planner":  { "$value": 260, "$type": "number", "$description": "Violet — Product Owner" },
+    "scribe":   { "$value": 200, "$type": "number", "$description": "Cyan — Spec Writer" },
+    "forge":    { "$value": 30,  "$type": "number", "$description": "Orange — Backend Dev" },
+    "loom":     { "$value": 160, "$type": "number", "$description": "Green — Frontend Dev" },
+    "sentinel": { "$value": 340, "$type": "number", "$description": "Pink — QA / Testing" },
+    "pilot":    { "$value": 100, "$type": "number", "$description": "Olive — DevOps" }
+  },
+
+  "font": {
+    "family": {
+      "sans": { "$value": "\"Geist\", \"Inter\", -apple-system, system-ui, sans-serif",       "$type": "fontFamily", "$description": "UI text, headings" },
+      "mono": { "$value": "\"Geist Mono\", \"JetBrains Mono\", ui-monospace, Menlo, monospace", "$type": "fontFamily", "$description": "IDs, metrics, code artifacts, status bar" }
+    },
+    "size": {
+      "xs":   { "$value": "10.5px", "$type": "dimension", "$description": "Meta, tag labels, timestamps" },
+      "sm":   { "$value": "11.5px", "$type": "dimension", "$description": "Secondary UI, chip text" },
+      "base": { "$value": "13px",   "$type": "dimension", "$description": "Body, card titles" },
+      "md":   { "$value": "13.5px", "$type": "dimension", "$description": "Description paragraphs" },
+      "lg":   { "$value": "15px",   "$type": "dimension", "$description": "Section titles in modals" },
+      "xl":   { "$value": "22px",   "$type": "dimension", "$description": "Drawer headings (card titles)" }
+    },
+    "weight": {
+      "regular":  { "$value": 400, "$type": "fontWeight" },
+      "medium":   { "$value": 500, "$type": "fontWeight" },
+      "semibold": { "$value": 600, "$type": "fontWeight" },
+      "bold":     { "$value": 700, "$type": "fontWeight" }
+    },
+    "tracking": {
+      "tight":   { "$value": "-0.4px", "$type": "dimension", "$description": "Large headings" },
+      "default": { "$value": "-0.1px", "$type": "dimension", "$description": "Body, UI" },
+      "wide":    { "$value": "0.3px",  "$type": "dimension", "$description": "Uppercase meta labels" },
+      "wider":   { "$value": "0.5px",  "$type": "dimension", "$description": "Section eyebrows" }
+    },
+    "leading": {
+      "tight":   { "$value": 1.2,  "$type": "number", "$description": "Headings, chips" },
+      "snug":    { "$value": 1.35, "$type": "number", "$description": "Card titles" },
+      "default": { "$value": 1.45, "$type": "number", "$description": "UI body" },
+      "relaxed": { "$value": 1.55, "$type": "number", "$description": "Long-form descriptions" }
+    }
+  },
+
+  "space": {
+    "0":  { "$value": "0",    "$type": "dimension" },
+    "1":  { "$value": "4px",  "$type": "dimension" },
+    "2":  { "$value": "6px",  "$type": "dimension" },
+    "3":  { "$value": "8px",  "$type": "dimension" },
+    "4":  { "$value": "10px", "$type": "dimension" },
+    "5":  { "$value": "12px", "$type": "dimension" },
+    "6":  { "$value": "14px", "$type": "dimension" },
+    "7":  { "$value": "16px", "$type": "dimension" },
+    "8":  { "$value": "20px", "$type": "dimension" },
+    "9":  { "$value": "24px", "$type": "dimension" }
+  },
+
+  "radius": {
+    "sm":   { "$value": "3px",  "$type": "dimension", "$description": "Tag chips, inline badges" },
+    "md":   { "$value": "5px",  "$type": "dimension", "$description": "Buttons, filter pills" },
+    "lg":   { "$value": "6px",  "$type": "dimension", "$description": "Header buttons, app-mark tile" },
+    "xl":   { "$value": "8px",  "$type": "dimension", "$description": "Cards, callouts, input fields" },
+    "2xl":  { "$value": "10px", "$type": "dimension", "$description": "Panels (agents rail, activity log, column bodies)" },
+    "full": { "$value": "9999px", "$type": "dimension", "$description": "Status dots, stepper nodes" }
+  },
+
+  "shadow": {
+    "live-ring":    { "$value": "0 0 0 3px rgba(124, 58, 237, 0.06)", "$type": "shadow", "$description": "Soft violet halo on actively-worked cards" },
+    "drawer":       { "$value": "-16px 0 40px rgba(24, 24, 27, 0.08)", "$type": "shadow", "$description": "Card detail drawer elevation" },
+    "modal-backdrop": { "$value": "rgba(24, 24, 27, 0.22)", "$type": "color", "$description": "Backdrop fill behind modals and drawers" }
+  },
+
+  "border-width": {
+    "hair":   { "$value": "1px",   "$type": "dimension" },
+    "medium": { "$value": "1.5px", "$type": "dimension", "$description": "Checkboxes, stepper nodes" },
+    "strong": { "$value": "2px",   "$type": "dimension", "$description": "Reply thread accent" }
+  },
+
+  "layout": {
+    "rail-agents":    { "$value": "220px", "$type": "dimension", "$description": "Left agents panel width" },
+    "rail-activity":  { "$value": "280px", "$type": "dimension", "$description": "Right activity panel width" },
+    "rail-collapsed": { "$value": "32px",  "$type": "dimension", "$description": "Collapsed panel tab width" },
+    "drawer":         { "$value": "560px", "$type": "dimension", "$description": "Card detail drawer width" },
+    "modal":          { "$value": "640px", "$type": "dimension", "$description": "New card / new agent modal width" },
+    "column-min":     { "$value": "0",     "$type": "dimension", "$description": "Columns flex: 1 to fill remaining space" },
+    "column-gap":     { "$value": "12px",  "$type": "dimension", "$description": "Gap between board columns" },
+    "stage-padding":  { "$value": "14px",  "$type": "dimension", "$description": "Outer padding around the board body" }
+  },
+
+  "motion": {
+    "pulse": {
+      "$value": "1.4s ease-in-out infinite",
+      "$type": "transition",
+      "$description": "`gpulse` keyframes: 0/100% opacity 1, 50% opacity 0.3. Used on live indicators and active stepper node."
+    },
+    "pulse-slow": {
+      "$value": "1.6s ease-in-out infinite",
+      "$type": "transition",
+      "$description": "Slower pulse on the status-bar Claude Code connection dot."
+    }
+  }
+}
