@@ -10,10 +10,14 @@ import { statusRoutes } from './routes/status.js';
 import { agentRoutes } from './routes/agents.js';
 import { cardRoutes } from './routes/cards.js';
 import { commentRoutes } from './routes/comments.js';
+import { configRoutes } from './routes/config.js';
 
 const app = Fastify({ logger: { level: 'warn' } });
 
-await app.register(cors, { origin: 'http://localhost:5173' });
+await app.register(cors, {
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+});
 await app.register(websocket);
 
 registerWs(app);
@@ -21,6 +25,7 @@ await app.register(statusRoutes);
 await app.register(agentRoutes);
 await app.register(cardRoutes);
 await app.register(commentRoutes);
+await app.register(configRoutes);
 
 seedAgents();
 startOrchestrator();

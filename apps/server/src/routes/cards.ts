@@ -140,6 +140,22 @@ export async function cardRoutes(app: FastifyInstance) {
     return card;
   });
 
+  app.delete('/api/cards/:id', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const row = db.prepare('SELECT id FROM cards WHERE id = ?').get(id);
+    if (!row) return reply.status(404).send({ error: 'Not found' });
+
+    db.transaction(() => {
+      db.prepare('DELETE FROM activity WHERE card_id = ?').run(id);
+      db.prepare('DELETE FROM artifacts WHERE card_id = ?').run(id);
+      db.prepare('DELETE FROM comments WHERE card_id = ?').run(id);
+      db.prepare('DELETE FROM cards WHERE id = ?').run(id);
+    })();
+
+    bus.emit('ws:broadcast', { type: 'card:deleted', cardId: id });
+    return { ok: true };
+  });
+
   app.post('/api/cards/:id/unblock', async (req, reply) => {
     const { id } = req.params as { id: string };
     const row = db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown> | undefined;

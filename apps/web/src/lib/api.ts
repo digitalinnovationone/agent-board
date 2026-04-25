@@ -3,8 +3,9 @@ import type { Agent, Card, CardDetail, Comment, StatusSnapshot } from '@agent-bo
 const BASE = 'http://localhost:4000';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const hasBody = init?.body != null;
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { ...(hasBody ? { 'Content-Type': 'application/json' } : {}), ...init?.headers },
     ...init,
   });
   if (!res.ok) {
@@ -16,6 +17,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   status: () => request<StatusSnapshot>('/api/status'),
+  config: {
+    get: () => request<{ workDir: string }>('/api/config'),
+    patch: (workDir: string) => request<{ workDir: string }>('/api/config', { method: 'PATCH', body: JSON.stringify({ workDir }) }),
+  },
   agents: {
     list: () => request<Agent[]>('/api/agents'),
     create: (body: Partial<Agent>) => request<Agent>('/api/agents', { method: 'POST', body: JSON.stringify(body) }),
@@ -30,6 +35,7 @@ export const api = {
     update: (id: string, body: Partial<Card>) => request<Card>(`/api/cards/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     unblock: (id: string, note?: string) =>
       request<Card>(`/api/cards/${id}/unblock`, { method: 'POST', body: JSON.stringify({ note }) }),
+    delete: (id: string) => request<{ ok: boolean }>(`/api/cards/${id}`, { method: 'DELETE' }),
   },
   comments: {
     create: (cardId: string, body: { text: string; addresses?: string }) =>

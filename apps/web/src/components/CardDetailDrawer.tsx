@@ -88,7 +88,23 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [posting, setPosting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const commentRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete ${cardId}? This cannot be undone.`)) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.cards.delete(cardId);
+      onClose();
+    } catch (err) {
+      setDeleteError(String(err));
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -152,14 +168,36 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
                 {loading ? '…' : detail?.title ?? cardId}
               </h2>
             </div>
-            <button className="icon-btn" onClick={onClose} style={{ marginTop: 2, flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <line x1="2" y1="2" x2="12" y2="12" /><line x1="12" y1="2" x2="2" y2="12" />
-              </svg>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--g-space-1)', flexShrink: 0, marginTop: 2 }}>
+              <button
+                className="icon-btn"
+                onClick={(e) => handleDelete(e)}
+                disabled={deleting}
+                title="Delete card"
+                style={{ color: 'var(--g-color-warn)' }}
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1,3 12,3" />
+                  <path d="M4 3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1" />
+                  <rect x="2" y="3" width="9" height="9" rx="1" />
+                  <line x1="5" y1="6" x2="5" y2="9" />
+                  <line x1="8" y1="6" x2="8" y2="9" />
+                </svg>
+              </button>
+              <button className="icon-btn" onClick={onClose}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <line x1="2" y1="2" x2="12" y2="12" /><line x1="12" y1="2" x2="2" y2="12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {detail && <PipelineStepper column={detail.column} />}
+          {deleteError && (
+            <div style={{ fontSize: 'var(--g-text-xs)', color: 'var(--g-color-warn)', fontFamily: 'var(--g-font-mono)', marginTop: 'var(--g-space-2)' }}>
+              {deleteError}
+            </div>
+          )}
         </div>
 
         {/* Body */}

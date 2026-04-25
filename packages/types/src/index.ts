@@ -118,6 +118,7 @@ export type WsEvent =
   | { type: 'card:created' | 'card:updated'; card: Card }
   | { type: 'card:moved'; cardId: string; from: Column; to: Column }
   | { type: 'card:blocked' | 'card:unblocked'; cardId: string; reason?: string }
+  | { type: 'card:deleted'; cardId: string }
   | { type: 'activity:added'; cardId: string; activity: Activity }
   | { type: 'artifact:added'; cardId: string; artifact: Artifact }
   | { type: 'comment:added'; cardId: string; comment: Comment }

@@ -13,6 +13,7 @@ export interface AppState {
   uiOpenCardId: string | null;
   uiOpenModal: 'new-card' | 'new-agent' | null;
   panels: { agentsOpen: boolean; logOpen: boolean };
+  workDir: string;
 }
 
 const initialStatus: StatusSnapshot = {
@@ -35,6 +36,7 @@ export const initialState: AppState = {
   uiOpenCardId: null,
   uiOpenModal: null,
   panels: { agentsOpen: true, logOpen: true },
+  workDir: '',
 };
 
 type Action =
@@ -52,6 +54,7 @@ type Action =
   | { type: 'CLOSE_MODAL' }
   | { type: 'TOGGLE_AGENTS_RAIL' }
   | { type: 'TOGGLE_LOG_RAIL' }
+  | { type: 'SET_WORK_DIR'; workDir: string }
   | { type: 'APPLY_WS_EVENT'; event: WsEvent };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -103,6 +106,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, panels: { ...state.panels, agentsOpen: !state.panels.agentsOpen } };
     case 'TOGGLE_LOG_RAIL':
       return { ...state, panels: { ...state.panels, logOpen: !state.panels.logOpen } };
+    case 'SET_WORK_DIR':
+      return { ...state, workDir: action.workDir };
     case 'APPLY_WS_EVENT': {
       const ev = action.event;
       switch (ev.type) {
@@ -123,6 +128,12 @@ function reducer(state: AppState, action: Action): AppState {
             return { ...state, cards: { ...state.cards, [ev.cardId]: { ...card, column: ev.to } } };
           }
           return { ...state, cards: { ...state.cards, [ev.card.id]: ev.card } };
+        }
+        case 'card:deleted': {
+          const cards = { ...state.cards };
+          delete cards[ev.cardId];
+          const uiOpenCardId = state.uiOpenCardId === ev.cardId ? null : state.uiOpenCardId;
+          return { ...state, cards, uiOpenCardId };
         }
         case 'card:blocked': {
           const card = state.cards[ev.cardId];

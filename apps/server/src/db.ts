@@ -69,6 +69,11 @@ db.exec(`
     addresses TEXT,
     t         INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS config (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
 export default db;

@@ -1,7 +1,7 @@
-import { query } from '@anthropic-ai/claude-agent-sdk';
 import db from '../db.js';
 import { bus } from '../events.js';
 import { getDefaultPrompt } from './prompts.js';
+import { runClaudeCli, buildAllowedTools } from './claude-cli.js';
 import type { Agent, CardDetail, Column, Activity, Artifact } from '../types.js';
 import { COLUMNS } from '../types.js';
 
@@ -91,53 +91,32 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
   // Log pickup
   addActivity(card.id, agent.id, 'work', 'picked up card', null);
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    addActivity(card.id, agent.id, 'warn', 'skipped — no ANTHROPIC_API_KEY', null);
-    bus.emit('ws:broadcast', { type: 'agent:status', agentId: agent.id, status: 'idle' });
-    return;
-  }
-
   const systemPrompt = agent.systemPrompt ?? getDefaultPrompt(agent.id);
   const cardContext = buildCardContext(card);
-  const fullPrompt = `${systemPrompt}\n\n---\n\n${cardContext}`;
+
+  const configRow = db.prepare("SELECT value FROM config WHERE key = 'work_dir'").get() as { value: string } | undefined;
+  const cwd = configRow?.value ?? process.env.CLAUDE_CODE_WORK_DIR ?? process.cwd();
+  const claudeTools = buildAllowedTools(agent.tools);
 
   let lastText = '';
 
   try {
-    for await (const message of query({
-      prompt: fullPrompt,
-      options: {
-        model: 'claude-sonnet-4-6',
-        allowedTools: [],
-        permissionMode: 'bypassPermissions',
-        maxTurns: 1,
-      } as Parameters<typeof query>[0]['options'],
-    })) {
-      const msg = message as Record<string, unknown>;
+    addActivity(card.id, agent.id, 'work', 'running claude', `cwd: ${cwd}`);
 
-      if (msg.type === 'assistant') {
-        const content = (msg.message as Record<string, unknown>)?.content;
-        if (Array.isArray(content)) {
-          for (const block of content) {
-            const b = block as Record<string, unknown>;
-            if (b.type === 'text' && typeof b.text === 'string') {
-              lastText = b.text;
-              // Stream a progress activity (truncated)
-              const preview = b.text.slice(0, 120).replace(/\n/g, ' ');
-              addActivity(card.id, agent.id, 'note', 'wrote', preview);
-            }
-          }
-        }
-      }
+    lastText = await runClaudeCli({
+      systemPrompt,
+      userPrompt: cardContext,
+      model: 'claude-sonnet-4-6',
+      allowedTools: claudeTools,
+      cwd,
+    });
 
-      if (msg.type === 'result') {
-        const result = msg.result as string | undefined;
-        if (result) lastText = result;
-      }
-    }
+    const preview = lastText.slice(0, 120).replace(/\n/g, ' ');
+    addActivity(card.id, agent.id, 'note', 'completed turn', preview);
+
   } catch (err) {
-    console.error(`[agent:${agent.id}] SDK error:`, err);
-    addActivity(card.id, agent.id, 'warn', 'error calling Claude API', String(err).slice(0, 200));
+    console.error(`[agent:${agent.id}] claude CLI error:`, err);
+    addActivity(card.id, agent.id, 'warn', 'error running claude CLI', String(err).slice(0, 200));
     bus.emit('ws:broadcast', { type: 'agent:status', agentId: agent.id, status: 'idle' });
     return;
   }

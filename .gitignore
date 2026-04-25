@@ -5,3 +5,4 @@ dist/
 apps/web/dist/
 apps/server/dist/
 *.js.map
+.claude/

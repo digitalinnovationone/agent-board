@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useAppStore } from './lib/store';
 import { api } from './lib/api';
 import { ws } from './lib/ws';
@@ -9,22 +9,26 @@ import { StatusBar } from './components/StatusBar';
 import { NewCardModal } from './components/NewCardModal';
 import { NewAgentModal } from './components/NewAgentModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
+import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
   const { state, dispatch, applyWsEvent } = useAppStore();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Bootstrap data from REST on mount
   useEffect(() => {
     async function bootstrap() {
       try {
-        const [status, agents, cards] = await Promise.all([
+        const [status, agents, cards, config] = await Promise.all([
           api.status(),
           api.agents.list(),
           api.cards.list(),
+          api.config.get(),
         ]);
         dispatch({ type: 'SET_STATUS', payload: status });
         dispatch({ type: 'SET_AGENTS', agents });
         dispatch({ type: 'SET_CARDS', cards });
+        dispatch({ type: 'SET_WORK_DIR', workDir: config.workDir });
       } catch {
         // server may not be up yet
       }
@@ -37,12 +41,12 @@ export default function App() {
     ws.onStatus((connected) => {
       dispatch({ type: 'SET_WS_CONNECTED', connected });
       if (connected) {
-        // Refresh data on reconnect
-        Promise.all([api.status(), api.agents.list(), api.cards.list()])
-          .then(([status, agents, cards]) => {
+        Promise.all([api.status(), api.agents.list(), api.cards.list(), api.config.get()])
+          .then(([status, agents, cards, config]) => {
             dispatch({ type: 'SET_STATUS', payload: status });
             dispatch({ type: 'SET_AGENTS', agents });
             dispatch({ type: 'SET_CARDS', cards });
+            dispatch({ type: 'SET_WORK_DIR', workDir: config.workDir });
           })
           .catch(() => {});
       }
@@ -113,7 +117,12 @@ export default function App() {
       </div>
 
       {/* Status bar */}
-      <StatusBar status={state.status} wsState={state.wsState} />
+      <StatusBar
+        status={state.status}
+        wsState={state.wsState}
+        workDir={state.workDir}
+        onSettingsClick={() => setSettingsOpen(true)}
+      />
 
       {/* Overlays */}
       {state.uiOpenModal === 'new-card' && (
@@ -127,6 +136,13 @@ export default function App() {
           cardId={state.uiOpenCardId}
           agents={state.agents}
           onClose={() => dispatch({ type: 'CLOSE_CARD' })}
+        />
+      )}
+      {settingsOpen && (
+        <SettingsModal
+          workDir={state.workDir}
+          onSave={(workDir) => dispatch({ type: 'SET_WORK_DIR', workDir })}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
     </div>
