@@ -168,6 +168,10 @@ body {
   cursor: default;
 }
 
+.agent-row:hover {
+  background: var(--g-color-surface-2);
+}
+
 .agent-row-info {
   flex: 1;
   min-width: 0;

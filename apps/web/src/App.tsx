@@ -9,6 +9,7 @@ import { StatusBar } from './components/StatusBar';
 import { NewCardModal } from './components/NewCardModal';
 import { NewAgentModal } from './components/NewAgentModal';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
+import { AgentDetailModal } from './components/AgentDetailModal';
 import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
@@ -62,12 +63,13 @@ export default function App() {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         if (state.uiOpenCardId) dispatch({ type: 'CLOSE_CARD' });
+        else if (state.uiOpenAgentId) dispatch({ type: 'CLOSE_AGENT' });
         else if (state.uiOpenModal) dispatch({ type: 'CLOSE_MODAL' });
       }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [state.uiOpenCardId, state.uiOpenModal, dispatch]);
+  }, [state.uiOpenCardId, state.uiOpenAgentId, state.uiOpenModal, dispatch]);
 
   const agents = Object.values(state.agents);
 
@@ -102,6 +104,7 @@ export default function App() {
           collapsed={!state.panels.agentsOpen}
           onToggle={() => dispatch({ type: 'TOGGLE_AGENTS_RAIL' })}
           onNewAgent={() => dispatch({ type: 'OPEN_MODAL', modal: 'new-agent' })}
+          onAgentClick={(id) => dispatch({ type: 'OPEN_AGENT', id })}
         />
 
         <Board
@@ -136,6 +139,13 @@ export default function App() {
           cardId={state.uiOpenCardId}
           agents={state.agents}
           onClose={() => dispatch({ type: 'CLOSE_CARD' })}
+        />
+      )}
+      {state.uiOpenAgentId && (
+        <AgentDetailModal
+          agentId={state.uiOpenAgentId}
+          agents={state.agents}
+          onClose={() => dispatch({ type: 'CLOSE_AGENT' })}
         />
       )}
       {settingsOpen && (
