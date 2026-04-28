@@ -11,6 +11,7 @@ function rowToAgent(row: Record<string, unknown>): Agent {
     role: row.role as string,
     glyph: row.glyph as Glyph,
     hue: row.hue as number,
+    avatar: (row.avatar as string | null) ?? null,
     systemPrompt: row.system_prompt as string | null,
     tools: JSON.parse(row.tools as string),
     ownsColumn: row.owns_column as Column | null,
@@ -24,6 +25,7 @@ const AgentBody = z.object({
   role: z.string().min(1),
   glyph: z.enum(['triangle', 'square', 'diamond', 'circle', 'hex', 'chevron']),
   hue: z.number().int().min(0).max(360),
+  avatar: z.string().nullable().optional(),
   systemPrompt: z.string().nullable().optional(),
   tools: z.array(z.string()),
   ownsColumn: z
@@ -44,14 +46,15 @@ export async function agentRoutes(app: FastifyInstance) {
     const now = Date.now();
 
     db.prepare(`
-      INSERT INTO agents (id, name, role, glyph, hue, system_prompt, tools, owns_column, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO agents (id, name, role, glyph, hue, avatar, system_prompt, tools, owns_column, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       body.name,
       body.role,
       body.glyph,
       body.hue,
+      body.avatar ?? null,
       body.systemPrompt ?? null,
       JSON.stringify(body.tools),
       body.ownsColumn ?? null,
@@ -79,6 +82,7 @@ export async function agentRoutes(app: FastifyInstance) {
     if (body.role !== undefined) { fields.push('role = ?'); values.push(body.role); }
     if (body.glyph !== undefined) { fields.push('glyph = ?'); values.push(body.glyph); }
     if (body.hue !== undefined) { fields.push('hue = ?'); values.push(body.hue); }
+    if (body.avatar !== undefined) { fields.push('avatar = ?'); values.push(body.avatar); }
     if (body.systemPrompt !== undefined) { fields.push('system_prompt = ?'); values.push(body.systemPrompt); }
     if (body.tools !== undefined) { fields.push('tools = ?'); values.push(JSON.stringify(body.tools)); }
     if (body.ownsColumn !== undefined) { fields.push('owns_column = ?'); values.push(body.ownsColumn); }
