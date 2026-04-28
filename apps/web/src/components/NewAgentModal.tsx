@@ -13,8 +13,6 @@ const AVATAR_SEEDS = [
   'zoe', 'ryu', 'sage', 'ivy', 'leo', 'mia',
 ];
 
-const ACCENT_HUES = [220, 185, 0, 140, 300, 50, 260, 10, 175];
-
 const ROLE_TEMPLATES = [
   { label: 'Product Owner', role: 'Product Owner', glyph: 'triangle' as Glyph, hue: 260, ownsColumn: 'Backlog' as Column },
   { label: 'Spec Writer', role: 'Spec Writer', glyph: 'square' as Glyph, hue: 200, ownsColumn: 'Specification' as Column },
@@ -135,30 +133,6 @@ export function NewAgentModal({ onClose }: Props) {
                 >
                   <AgentChip glyph={glyph} hue={hue} avatar={seed} size={36} />
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Accent hue */}
-          <div className="field">
-            <span className="label">Accent</span>
-            <div className="pill-group">
-              {ACCENT_HUES.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setHue(h)}
-                  type="button"
-                  style={{
-                    width: 28, height: 28,
-                    borderRadius: 'var(--g-radius-full)',
-                    background: `oklch(0.6 0.18 ${h})`,
-                    border: hue === h ? '2px solid var(--g-color-text)' : '2px solid transparent',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    boxShadow: hue === h ? '0 0 0 2px var(--g-color-surface), 0 0 0 4px var(--g-color-text)' : 'none',
-                    transition: 'box-shadow 0.1s ease',
-                  }}
-                />
               ))}
             </div>
           </div>

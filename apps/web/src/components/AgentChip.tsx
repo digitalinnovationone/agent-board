@@ -17,7 +17,7 @@ export function AgentChip({ glyph, hue, avatar, size = 28 }: Props) {
       style={{
         width: size,
         height: size,
-        background: `oklch(0.97 0.02 ${hue})`,
+        background: avatar ? 'var(--g-color-surface-2)' : `oklch(0.97 0.02 ${hue})`,
         color: `oklch(0.48 0.16 ${hue})`,
         borderRadius: 'var(--g-radius-md)',
       }}
