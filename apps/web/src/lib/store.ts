@@ -11,6 +11,7 @@ export interface AppState {
   cards: Record<string, Card>;
   cardDetails: Record<string, CardDetail>;
   uiOpenCardId: string | null;
+  uiOpenAgentId: string | null;
   uiOpenModal: 'new-card' | 'new-agent' | null;
   panels: { agentsOpen: boolean; logOpen: boolean };
   workDir: string;
@@ -34,6 +35,7 @@ export const initialState: AppState = {
   cards: {},
   cardDetails: {},
   uiOpenCardId: null,
+  uiOpenAgentId: null,
   uiOpenModal: null,
   panels: { agentsOpen: true, logOpen: true },
   workDir: '',
@@ -50,6 +52,8 @@ type Action =
   | { type: 'SET_CARD_DETAIL'; detail: CardDetail }
   | { type: 'OPEN_CARD'; id: string }
   | { type: 'CLOSE_CARD' }
+  | { type: 'OPEN_AGENT'; id: string }
+  | { type: 'CLOSE_AGENT' }
   | { type: 'OPEN_MODAL'; modal: 'new-card' | 'new-agent' }
   | { type: 'CLOSE_MODAL' }
   | { type: 'TOGGLE_AGENTS_RAIL' }
@@ -98,6 +102,10 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, uiOpenCardId: action.id };
     case 'CLOSE_CARD':
       return { ...state, uiOpenCardId: null };
+    case 'OPEN_AGENT':
+      return { ...state, uiOpenAgentId: action.id };
+    case 'CLOSE_AGENT':
+      return { ...state, uiOpenAgentId: null };
     case 'OPEN_MODAL':
       return { ...state, uiOpenModal: action.modal };
     case 'CLOSE_MODAL':
@@ -117,7 +125,8 @@ function reducer(state: AppState, action: Action): AppState {
         case 'agent:deleted': {
           const agents = { ...state.agents };
           delete agents[ev.agent.id];
-          return { ...state, agents };
+          const uiOpenAgentId = state.uiOpenAgentId === ev.agent.id ? null : state.uiOpenAgentId;
+          return { ...state, agents, uiOpenAgentId };
         }
         case 'card:created':
         case 'card:updated':
