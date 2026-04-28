@@ -8,9 +8,10 @@ interface Props {
   onClose: () => void;
 }
 
-const GLYPHS: Glyph[] = ['triangle', 'square', 'diamond', 'circle', 'hex', 'chevron'];
-
-const ACCENT_HUES = [220, 185, 0, 140, 300, 50, 260, 10, 175];
+const AVATAR_SEEDS = [
+  'felix', 'luna', 'max', 'aria', 'kai', 'nova',
+  'zoe', 'ryu', 'sage', 'ivy', 'leo', 'mia',
+];
 
 const ROLE_TEMPLATES = [
   { label: 'Product Owner', role: 'Product Owner', glyph: 'triangle' as Glyph, hue: 260, ownsColumn: 'Backlog' as Column },
@@ -29,6 +30,7 @@ export function NewAgentModal({ onClose }: Props) {
   const [name, setName] = useState('');
   const [glyph, setGlyph] = useState<Glyph>('hex');
   const [hue, setHue] = useState(220);
+  const [avatar, setAvatar] = useState(AVATAR_SEEDS[0]);
   const [roleTemplate, setRoleTemplate] = useState<string | null>(null);
   const [role, setRole] = useState('');
   const [ownsColumn, setOwnsColumn] = useState<Column | null>(null);
@@ -59,6 +61,7 @@ export function NewAgentModal({ onClose }: Props) {
         role: role || name.trim(),
         glyph,
         hue,
+        avatar,
         systemPrompt: systemPrompt || null,
         tools,
         ownsColumn,
@@ -82,16 +85,16 @@ export function NewAgentModal({ onClose }: Props) {
         </div>
 
         <div className="modal-body">
-          {/* Mark preview + Name + Handle */}
+          {/* Avatar preview + Name + Handle */}
           <div style={{ display: 'flex', gap: 'var(--g-space-5)', alignItems: 'flex-start' }}>
             <div className="field" style={{ flexShrink: 0 }}>
-              <span className="label">Mark</span>
+              <span className="label">Avatar</span>
               <div style={{
                 width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'var(--g-color-surface-2)', borderRadius: 'var(--g-radius-xl)',
                 border: '1px solid var(--g-color-border)',
               }}>
-                <AgentChip glyph={glyph} hue={hue} size={36} />
+                <AgentChip glyph={glyph} hue={hue} avatar={avatar} size={36} />
               </div>
             </div>
 
@@ -117,43 +120,19 @@ export function NewAgentModal({ onClose }: Props) {
             </div>
           </div>
 
-          {/* Glyph picker */}
+          {/* Avatar picker */}
           <div className="field">
-            <span className="label">Glyph</span>
-            <div className="pill-group">
-              {GLYPHS.map((g) => (
+            <span className="label">Look</span>
+            <div className="avatar-grid">
+              {AVATAR_SEEDS.map((seed) => (
                 <button
-                  key={g}
-                  className={`pill${glyph === g ? ' selected' : ''}`}
-                  onClick={() => setGlyph(g)}
+                  key={seed}
+                  className={`avatar-option${avatar === seed ? ' selected' : ''}`}
+                  onClick={() => setAvatar(seed)}
                   type="button"
                 >
-                  <AgentChip glyph={g} hue={glyph === g ? hue : 240} size={18} />
+                  <AgentChip glyph={glyph} hue={hue} avatar={seed} size={36} />
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Accent hue */}
-          <div className="field">
-            <span className="label">Accent</span>
-            <div className="pill-group">
-              {ACCENT_HUES.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setHue(h)}
-                  type="button"
-                  style={{
-                    width: 28, height: 28,
-                    borderRadius: 'var(--g-radius-full)',
-                    background: `oklch(0.6 0.18 ${h})`,
-                    border: hue === h ? '2px solid var(--g-color-text)' : '2px solid transparent',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    boxShadow: hue === h ? '0 0 0 2px var(--g-color-surface), 0 0 0 4px var(--g-color-text)' : 'none',
-                    transition: 'box-shadow 0.1s ease',
-                  }}
-                />
               ))}
             </div>
           </div>

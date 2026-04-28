@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
+import diomeLogo from './assets/diome-white.png';
 import { useAppStore } from './lib/store';
 import { api } from './lib/api';
 import { ws } from './lib/ws';
@@ -77,12 +78,7 @@ export default function App() {
     <div className="app-shell">
       {/* Top bar */}
       <header className="app-topbar">
-        <div className="app-logo">
-          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="16" height="16" rx="3" fill="#18181b" />
-            <path d="M4 8h8M8 4v8" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
+        <img src={diomeLogo} alt="DIO" style={{ height: 20, width: 'auto' }} />
         <span className="app-topbar-title">Agent Board</span>
         <span className="app-topbar-sep">/</span>
         <span className="app-topbar-breadcrumb">Pipeline</span>

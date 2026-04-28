@@ -57,7 +57,7 @@ function AgentRow({ agent, onClick }: { agent: Agent; onClick: () => void }) {
   const isWorking = agent.status === 'working';
   return (
     <div className="agent-row" onClick={onClick} style={{ cursor: 'pointer' }} title={agent.name}>
-      <AgentChip glyph={agent.glyph} hue={agent.hue} size={28} />
+      <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={28} />
       <div className="agent-row-info">
         <div className="agent-row-name">{agent.name}</div>
         <div className="agent-row-role">{agent.role}</div>

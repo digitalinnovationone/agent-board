@@ -37,6 +37,7 @@ function rowToAgent(row: Record<string, unknown>): Agent {
     role: row.role as string,
     glyph: row.glyph as Glyph,
     hue: row.hue as number,
+    avatar: (row.avatar as string | null) ?? null,
     systemPrompt: row.system_prompt as string | null,
     tools: JSON.parse(row.tools as string) as string[],
     ownsColumn: row.owns_column as Column | null,

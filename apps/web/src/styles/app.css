@@ -223,11 +223,18 @@ body {
   height: 28px;
   border-radius: var(--g-radius-md);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .agent-chip svg {
   width: 14px;
   height: 14px;
+}
+
+.agent-chip img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* ── Board area ─────────────────────────────────────────── */
@@ -748,6 +755,34 @@ textarea.input {
   font-size: var(--g-text-xs);
   color: var(--g-color-text-3);
   margin-top: 2px;
+}
+
+/* Avatar picker grid */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--g-space-2);
+}
+
+.avatar-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--g-space-2);
+  border-radius: var(--g-radius-lg);
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+.avatar-option:hover {
+  background: var(--g-color-surface-2);
+}
+
+.avatar-option.selected {
+  border-color: var(--g-color-accent);
+  background: var(--g-color-accent-bg);
 }
 
 /* Pill picker */

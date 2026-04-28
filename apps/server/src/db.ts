@@ -76,4 +76,20 @@ db.exec(`
   );
 `);
 
+// Add avatar column to existing databases
+const agentCols = (db.pragma('table_info(agents)') as { name: string }[]).map((c) => c.name);
+if (!agentCols.includes('avatar')) {
+  db.exec('ALTER TABLE agents ADD COLUMN avatar TEXT');
+}
+
+// Backfill default agents with avatar seeds
+const defaultAvatars: [string, string][] = [
+  ['planner', 'felix'], ['scribe', 'luna'], ['forge', 'max'],
+  ['loom', 'aria'], ['sentinel', 'kai'], ['pilot', 'nova'],
+];
+const backfillAvatar = db.prepare('UPDATE agents SET avatar = ? WHERE id = ? AND avatar IS NULL');
+for (const [id, avatar] of defaultAvatars) {
+  backfillAvatar.run(avatar, id);
+}
+
 export default db;

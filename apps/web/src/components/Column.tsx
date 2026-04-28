@@ -45,7 +45,7 @@ export function Column({ column, cards, agents, onCardClick }: Props) {
       {owners.length > 0 && (
         <div className="column-owner">
           {owners.map((a) => (
-            <AgentChip key={a.id} glyph={a.glyph} hue={a.hue} size={18} />
+            <AgentChip key={a.id} glyph={a.glyph} hue={a.hue} avatar={a.avatar} size={18} />
           ))}
           <span className="column-owner-name">
             {owners.map((a) => a.name).join(' + ')}

@@ -48,7 +48,7 @@ export function Card({ card, agents, workingAgentId, onClick }: Props) {
 
       <div className="card-footer">
         <div className="card-agent">
-          {worker && <AgentChip glyph={worker.glyph} hue={worker.hue} size={18} />}
+          {worker && <AgentChip glyph={worker.glyph} hue={worker.hue} avatar={worker.avatar} size={18} />}
           {worker && <span style={{ fontSize: 'var(--g-text-sm)', color: 'var(--g-color-text-3)' }}>{worker.name}</span>}
         </div>
         <span className="card-time">{timeAgo(card.updatedAt)}</span>

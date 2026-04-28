@@ -10,8 +10,11 @@ interface Props {
   onClose: () => void;
 }
 
-const GLYPHS: Glyph[] = ['triangle', 'square', 'diamond', 'circle', 'hex', 'chevron'];
-const ACCENT_HUES = [220, 185, 0, 140, 300, 50, 260, 10, 175];
+const AVATAR_SEEDS = [
+  'felix', 'luna', 'max', 'aria', 'kai', 'nova',
+  'zoe', 'ryu', 'sage', 'ivy', 'leo', 'mia',
+];
+
 
 export function AgentDetailModal({ agentId, agents, onClose }: Props) {
   const agent = agents[agentId];
@@ -20,6 +23,7 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
   const [name, setName] = useState('');
   const [glyph, setGlyph] = useState<Glyph>('hex');
   const [hue, setHue] = useState(220);
+  const [avatar, setAvatar] = useState(AVATAR_SEEDS[0]);
   const [role, setRole] = useState('');
   const [ownsColumn, setOwnsColumn] = useState<Column | null>(null);
   const [systemPrompt, setSystemPrompt] = useState('');
@@ -35,6 +39,7 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
     setName(a.name);
     setGlyph(a.glyph);
     setHue(a.hue);
+    setAvatar(a.avatar ?? AVATAR_SEEDS[0]);
     setRole(a.role);
     setOwnsColumn(a.ownsColumn);
     setSystemPrompt(a.systemPrompt ?? '');
@@ -63,7 +68,7 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
     setError(null);
     try {
       await api.agents.update(agentId, {
-        name: name.trim(), role, glyph, hue,
+        name: name.trim(), role, glyph, hue, avatar,
         systemPrompt: systemPrompt || null,
         tools, ownsColumn,
       });
@@ -97,7 +102,7 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
 
         {/* Header */}
         <div className="modal-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--g-space-4)' }}>
-          <AgentChip glyph={agent.glyph} hue={agent.hue} size={36} />
+          <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={36} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 className="modal-title" style={{ marginBottom: 2 }}>{agent.name}</h2>
             <p className="modal-subtitle" style={{ margin: 0 }}>
@@ -153,9 +158,9 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
               <div className="field">
                 <span className="label">Mark</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--g-space-3)' }}>
-                  <AgentChip glyph={agent.glyph} hue={agent.hue} size={32} />
+                  <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={32} />
                   <span style={{ fontSize: 'var(--g-text-sm)', color: 'var(--g-color-text-muted)' }}>
-                    {agent.glyph} · hue {agent.hue}
+                    hue {agent.hue}
                   </span>
                 </div>
               </div>
@@ -192,16 +197,16 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
             </>
           ) : (
             <>
-              {/* Mark + Name row */}
+              {/* Avatar preview + Name row */}
               <div style={{ display: 'flex', gap: 'var(--g-space-5)', alignItems: 'flex-start' }}>
                 <div className="field" style={{ flexShrink: 0 }}>
-                  <span className="label">Mark</span>
+                  <span className="label">Avatar</span>
                   <div style={{
                     width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'var(--g-color-surface-2)', borderRadius: 'var(--g-radius-xl)',
                     border: '1px solid var(--g-color-border)',
                   }}>
-                    <AgentChip glyph={glyph} hue={hue} size={36} />
+                    <AgentChip glyph={glyph} hue={hue} avatar={avatar} size={36} />
                   </div>
                 </div>
                 <div className="field" style={{ flex: 1 }}>
@@ -215,37 +220,19 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Glyph picker */}
+              {/* Avatar picker */}
               <div className="field">
-                <span className="label">Glyph</span>
-                <div className="pill-group">
-                  {GLYPHS.map((g) => (
-                    <button key={g} className={`pill${glyph === g ? ' selected' : ''}`} onClick={() => setGlyph(g)} type="button">
-                      <AgentChip glyph={g} hue={glyph === g ? hue : 240} size={18} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Accent hue */}
-              <div className="field">
-                <span className="label">Accent</span>
-                <div className="pill-group">
-                  {ACCENT_HUES.map((h) => (
+                <span className="label">Look</span>
+                <div className="avatar-grid">
+                  {AVATAR_SEEDS.map((seed) => (
                     <button
-                      key={h}
-                      onClick={() => setHue(h)}
+                      key={seed}
+                      className={`avatar-option${avatar === seed ? ' selected' : ''}`}
+                      onClick={() => setAvatar(seed)}
                       type="button"
-                      style={{
-                        width: 28, height: 28,
-                        borderRadius: 'var(--g-radius-full)',
-                        background: `oklch(0.6 0.18 ${h})`,
-                        border: hue === h ? '2px solid var(--g-color-text)' : '2px solid transparent',
-                        cursor: 'pointer', outline: 'none',
-                        boxShadow: hue === h ? '0 0 0 2px var(--g-color-surface), 0 0 0 4px var(--g-color-text)' : 'none',
-                        transition: 'box-shadow 0.1s ease',
-                      }}
-                    />
+                    >
+                      <AgentChip glyph={glyph} hue={hue} avatar={seed} size={36} />
+                    </button>
                   ))}
                 </div>
               </div>

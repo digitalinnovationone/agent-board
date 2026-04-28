@@ -42,6 +42,7 @@ export interface Agent {
   role: string;
   glyph: Glyph;
   hue: number;
+  avatar: string | null;
   systemPrompt: string | null;
   tools: string[];
   ownsColumn: Column | null;

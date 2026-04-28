@@ -297,7 +297,7 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
                           background: 'var(--g-color-surface-2)', borderRadius: 'var(--g-radius-lg)',
                           border: '1px solid var(--g-color-border)',
                         }}>
-                          {agent && <AgentChip glyph={agent.glyph} hue={agent.hue} size={20} />}
+                          {agent && <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={20} />}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 'var(--g-text-sm)', fontFamily: 'var(--g-font-mono)', color: 'var(--g-color-text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {a.title}
@@ -341,7 +341,7 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
                           }} />
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--g-space-2)', flexWrap: 'wrap' }}>
-                              {agent && <AgentChip glyph={agent.glyph} hue={agent.hue} size={16} />}
+                              {agent && <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={16} />}
                               <span style={{ fontSize: 'var(--g-text-sm)', color: 'var(--g-color-text-2)', fontWeight: 'var(--g-weight-medium)' }}>
                                 {agent ? agent.name : 'You'}
                               </span>
@@ -378,7 +378,7 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
                       return (
                         <div key={c.id} style={{ display: 'flex', gap: 'var(--g-space-3)', alignItems: 'flex-start' }}>
                           {agent ? (
-                            <AgentChip glyph={agent.glyph} hue={agent.hue} size={22} />
+                            <AgentChip glyph={agent.glyph} hue={agent.hue} avatar={agent.avatar} size={22} />
                           ) : (
                             <div style={{
                               width: 22, height: 22, borderRadius: 'var(--g-radius-full)',
