@@ -6,9 +6,10 @@ interface Props {
   collapsed: boolean;
   onToggle: () => void;
   onNewAgent: () => void;
+  onAgentClick: (id: string) => void;
 }
 
-export function AgentsRail({ agents, collapsed, onToggle, onNewAgent }: Props) {
+export function AgentsRail({ agents, collapsed, onToggle, onNewAgent, onAgentClick }: Props) {
   return (
     <aside className={`agents-rail${collapsed ? ' collapsed' : ''}`}>
       <div className="agents-rail-header">
@@ -36,7 +37,7 @@ export function AgentsRail({ agents, collapsed, onToggle, onNewAgent }: Props) {
               <p className="agents-rail-empty">No agents yet.<br />Add one to start the pipeline.</p>
             ) : (
               agents.map((agent) => (
-                <AgentRow key={agent.id} agent={agent} />
+                <AgentRow key={agent.id} agent={agent} onClick={() => onAgentClick(agent.id)} />
               ))
             )}
           </div>
@@ -52,10 +53,10 @@ export function AgentsRail({ agents, collapsed, onToggle, onNewAgent }: Props) {
   );
 }
 
-function AgentRow({ agent }: { agent: Agent }) {
+function AgentRow({ agent, onClick }: { agent: Agent; onClick: () => void }) {
   const isWorking = agent.status === 'working';
   return (
-    <div className="agent-row">
+    <div className="agent-row" onClick={onClick} style={{ cursor: 'pointer' }} title={agent.name}>
       <AgentChip glyph={agent.glyph} hue={agent.hue} size={28} />
       <div className="agent-row-info">
         <div className="agent-row-name">{agent.name}</div>
