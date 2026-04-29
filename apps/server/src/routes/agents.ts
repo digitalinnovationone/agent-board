@@ -105,6 +105,8 @@ export async function agentRoutes(app: FastifyInstance) {
     if (!existing) return reply.status(404).send({ error: 'Not found' });
 
     const agent = rowToAgent(existing as Record<string, unknown>);
+    db.prepare('UPDATE activity SET agent_id = NULL WHERE agent_id = ?').run(id);
+    db.prepare('DELETE FROM artifacts WHERE agent_id = ?').run(id);
     db.prepare('DELETE FROM agents WHERE id = ?').run(id);
     bus.emit('ws:broadcast', { type: 'agent:deleted', agent });
     return { ok: true };
