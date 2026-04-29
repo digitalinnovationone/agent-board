@@ -83,7 +83,7 @@ export default function App() {
         <img src={diomeLogo} alt="DIO" style={{ height: 20, width: 'auto' }} />
         <span className="app-topbar-title">Agent Board</span>
         <span className="app-topbar-sep">/</span>
-        <span className="app-topbar-breadcrumb">Pipeline</span>
+        <span className="app-topbar-breadcrumb">{showOffice ? 'Office' : 'Kanban'}</span>
         <div className="app-topbar-actions">
           <button
             className="btn"
