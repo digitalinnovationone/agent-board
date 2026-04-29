@@ -9,6 +9,7 @@ import { ActivityLog } from './components/ActivityLog';
 import { StatusBar } from './components/StatusBar';
 import { NewCardModal } from './components/NewCardModal';
 import { NewAgentModal } from './components/NewAgentModal';
+import { OfficeView } from './components/OfficeView';
 import { CardDetailDrawer } from './components/CardDetailDrawer';
 import { AgentDetailModal } from './components/AgentDetailModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -16,6 +17,7 @@ import { SettingsModal } from './components/SettingsModal';
 export default function App() {
   const { state, dispatch, applyWsEvent } = useAppStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showOffice, setShowOffice] = useState(false);
 
   // Bootstrap data from REST on mount
   useEffect(() => {
@@ -85,6 +87,20 @@ export default function App() {
         <div className="app-topbar-actions">
           <button
             className="btn"
+            style={{ background: showOffice ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
+            onClick={() => setShowOffice(v => !v)}
+            title="Office view"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="5" width="14" height="10" rx="1" />
+              <path d="M5 15V10h6v5" />
+              <path d="M1 9h14" />
+              <path d="M5 5V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+            Office
+          </button>
+          <button
+            className="btn"
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
             onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'new-card' })}
           >
@@ -103,11 +119,15 @@ export default function App() {
           onAgentClick={(id) => dispatch({ type: 'OPEN_AGENT', id })}
         />
 
-        <Board
-          cards={state.cards}
-          agents={state.agents}
-          onCardClick={(id) => dispatch({ type: 'OPEN_CARD', id })}
-        />
+        {showOffice ? (
+          <OfficeView agents={state.agents} />
+        ) : (
+          <Board
+            cards={state.cards}
+            agents={state.agents}
+            onCardClick={(id) => dispatch({ type: 'OPEN_CARD', id })}
+          />
+        )}
 
         <ActivityLog
           collapsed={!state.panels.logOpen}
