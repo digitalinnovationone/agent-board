@@ -443,6 +443,61 @@ body {
   color: var(--g-color-text-3);
 }
 
+.card-rank {
+  font-size: var(--g-text-xs);
+  font-family: var(--g-font-mono);
+  color: var(--g-color-text-3);
+  margin-left: var(--g-space-1);
+}
+
+.card-backlog-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--g-space-1);
+  margin-bottom: var(--g-space-2);
+}
+
+.backlog-btn.start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  font-size: var(--g-text-xs);
+  font-weight: var(--g-weight-semibold);
+  border-radius: var(--g-radius-sm);
+  border: var(--g-border-hair) solid var(--g-color-accent);
+  background: transparent;
+  color: var(--g-color-accent);
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.1s, color 0.1s;
+}
+
+.backlog-btn.start:hover {
+  background: var(--g-color-accent);
+  color: #fff;
+}
+
+.backlog-card-wrap {
+  cursor: grab;
+}
+
+.backlog-card-wrap.dragging {
+  opacity: 0.35;
+  cursor: grabbing;
+}
+
+.backlog-card-wrap:active {
+  cursor: grabbing;
+}
+
+.drop-indicator {
+  height: 2px;
+  background: var(--g-color-accent);
+  border-radius: 1px;
+  margin: 3px 0;
+}
+
 /* ── Activity Rail ─────────────────────────────────────── */
 
 .activity-rail {

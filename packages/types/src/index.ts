@@ -61,6 +61,7 @@ export interface Card {
   acceptance: AcceptanceItem[];
   createdAt: number;
   updatedAt: number;
+  backlogPosition: number | null;
 }
 
 export interface AcceptanceItem {
@@ -124,4 +125,5 @@ export type WsEvent =
   | { type: 'artifact:added'; cardId: string; artifact: Artifact }
   | { type: 'comment:added'; cardId: string; comment: Comment }
   | { type: 'agent:status'; agentId: string; status: 'idle' | 'working'; cardId?: string }
-  | { type: 'status'; payload: StatusSnapshot };
+  | { type: 'status'; payload: StatusSnapshot }
+  | { type: 'backlog:reordered'; ids: string[] };

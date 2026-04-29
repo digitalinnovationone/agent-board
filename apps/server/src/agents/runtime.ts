@@ -2,7 +2,7 @@ import db from '../db.js';
 import { bus } from '../events.js';
 import { getDefaultPrompt } from './prompts.js';
 import { runClaudeCli, buildAllowedTools } from './claude-cli.js';
-import type { Agent, CardDetail, Column, Activity, Artifact } from '../types.js';
+import type { Agent, CardDetail, Column, Activity, Artifact, Priority, AcceptanceItem } from '../types.js';
 import { COLUMNS } from '../types.js';
 
 interface AgentOutcome {
@@ -138,11 +138,12 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
       bus.emit('ws:broadcast', {
         type: 'card:updated',
         card: {
-          id: c.id, title: c.title, description: c.description,
-          priority: c.priority, column: c.column,
-          blocked: Boolean(c.blocked), blockReason: c.block_reason,
-          acceptance: JSON.parse(c.acceptance as string),
-          createdAt: c.created_at, updatedAt: c.updated_at,
+          id: c.id as string, title: c.title as string, description: c.description as string,
+          priority: c.priority as Priority, column: c.column as Column,
+          blocked: Boolean(c.blocked), blockReason: c.block_reason as string | null,
+          acceptance: JSON.parse(c.acceptance as string) as AcceptanceItem[],
+          createdAt: c.created_at as number, updatedAt: c.updated_at as number,
+          backlogPosition: c.backlog_position as number | null,
         },
       });
     }
@@ -181,11 +182,12 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
       bus.emit('ws:broadcast', {
         type: 'card:updated',
         card: {
-          id: updatedRow.id, title: updatedRow.title, description: updatedRow.description,
-          priority: updatedRow.priority, column: updatedRow.column,
-          blocked: Boolean(updatedRow.blocked), blockReason: updatedRow.block_reason,
-          acceptance: JSON.parse(updatedRow.acceptance as string),
-          createdAt: updatedRow.created_at, updatedAt: updatedRow.updated_at,
+          id: updatedRow.id as string, title: updatedRow.title as string, description: updatedRow.description as string,
+          priority: updatedRow.priority as Priority, column: updatedRow.column as Column,
+          blocked: Boolean(updatedRow.blocked), blockReason: updatedRow.block_reason as string | null,
+          acceptance: JSON.parse(updatedRow.acceptance as string) as AcceptanceItem[],
+          createdAt: updatedRow.created_at as number, updatedAt: updatedRow.updated_at as number,
+          backlogPosition: updatedRow.backlog_position as number | null,
         },
       });
 

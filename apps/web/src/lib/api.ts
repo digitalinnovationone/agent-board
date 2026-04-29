@@ -35,6 +35,10 @@ export const api = {
     update: (id: string, body: Partial<Card>) => request<Card>(`/api/cards/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     unblock: (id: string, note?: string) =>
       request<Card>(`/api/cards/${id}/unblock`, { method: 'POST', body: JSON.stringify({ note }) }),
+    reorderBacklog: (ids: string[]) =>
+      request<{ ok: boolean }>('/api/cards/backlog/reorder', { method: 'POST', body: JSON.stringify({ ids }) }),
+    start: (id: string) =>
+      request<{ ok: boolean }>(`/api/cards/${id}/start`, { method: 'POST', body: JSON.stringify({}) }),
     delete: (id: string) => request<{ ok: boolean }>(`/api/cards/${id}`, { method: 'DELETE' }),
   },
   comments: {

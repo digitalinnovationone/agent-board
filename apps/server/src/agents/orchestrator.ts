@@ -24,6 +24,7 @@ function loadCardDetail(cardId: string): CardDetail | null {
     acceptance: JSON.parse(row.acceptance as string) as AcceptanceItem[],
     createdAt: row.created_at as number,
     updatedAt: row.updated_at as number,
+    backlogPosition: row.backlog_position as number | null,
     activity: activities,
     artifacts,
     comments,
@@ -46,28 +47,37 @@ function rowToAgent(row: Record<string, unknown>): Agent {
   };
 }
 
+async function handleEntry(cardId: string, column: string) {
+  const cardRow = db.prepare('SELECT blocked FROM cards WHERE id = ?').get(cardId) as { blocked: number } | undefined;
+  if (!cardRow || cardRow.blocked) return;
+
+  const ownerRows = db.prepare('SELECT * FROM agents WHERE owns_column = ?').all(column) as Record<string, unknown>[];
+  if (ownerRows.length === 0) return;
+
+  for (const row of ownerRows) {
+    const agent = rowToAgent(row);
+    if (activeAgents.has(agent.id)) continue;
+
+    activeAgents.add(agent.id);
+    const card = loadCardDetail(cardId);
+    if (!card) { activeAgents.delete(agent.id); continue; }
+
+    runAgent({ agent, card })
+      .catch((err) => console.error(`[orchestrator] runAgent error:`, err))
+      .finally(() => activeAgents.delete(agent.id));
+  }
+}
+
 export function startOrchestrator() {
   bus.on('card:entered', async ({ cardId, column }) => {
-    // Ignore if the card is blocked
-    const cardRow = db.prepare('SELECT blocked FROM cards WHERE id = ?').get(cardId) as { blocked: number } | undefined;
-    if (!cardRow || cardRow.blocked) return;
+    if (column === 'Backlog') return; // manual queue — user triggers via Start button
+    await handleEntry(cardId, column);
+  });
 
-    const ownerRows = db.prepare('SELECT * FROM agents WHERE owns_column = ?').all(column) as Record<string, unknown>[];
-    if (ownerRows.length === 0) return;
-
-    for (const row of ownerRows) {
-      const agent = rowToAgent(row);
-      if (activeAgents.has(agent.id)) continue; // agent already working
-
-      activeAgents.add(agent.id);
-      const card = loadCardDetail(cardId);
-      if (!card) { activeAgents.delete(agent.id); continue; }
-
-      // Run asynchronously so the HTTP response isn't blocked
-      runAgent({ agent, card })
-        .catch((err) => console.error(`[orchestrator] runAgent error:`, err))
-        .finally(() => activeAgents.delete(agent.id));
-    }
+  bus.on('card:start', async ({ cardId }) => {
+    const row = db.prepare('SELECT column FROM cards WHERE id = ?').get(cardId) as { column: string } | undefined;
+    if (!row) return;
+    await handleEntry(cardId, row.column);
   });
 
   console.log('[orchestrator] started');
