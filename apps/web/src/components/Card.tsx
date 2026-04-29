@@ -6,6 +6,9 @@ interface Props {
   agents: Record<string, Agent>;
   workingAgentId?: string;
   onClick: () => void;
+  backlogRank?: number;
+  isFirst?: boolean;
+  onStart?: () => void;
 }
 
 function timeAgo(ts: number): string {
@@ -17,15 +20,17 @@ function timeAgo(ts: number): string {
   return `${Math.floor(h / 24)}d`;
 }
 
-export function Card({ card, agents, workingAgentId, onClick }: Props) {
+export function Card({ card, agents, workingAgentId, onClick, backlogRank, isFirst, onStart }: Props) {
   const isLive = Boolean(workingAgentId);
   const state = card.blocked ? 'blocked' : isLive ? 'live' : 'idle';
   const worker = workingAgentId ? agents[workingAgentId] : null;
+  const isBacklog = backlogRank !== undefined;
 
   return (
     <article className="card" data-state={state} onClick={onClick}>
       <div className="card-header">
         <span className="card-id">{card.id}</span>
+        {isBacklog && <span className="card-rank">#{backlogRank}</span>}
         {isLive && !card.blocked && (
           <span className="card-badge live">
             <span className="card-badge-dot" />
@@ -44,6 +49,12 @@ export function Card({ card, agents, workingAgentId, onClick }: Props) {
 
       {card.blocked && card.blockReason && (
         <p className="card-block-reason">{card.blockReason}</p>
+      )}
+
+      {isFirst && onStart && (
+        <div className="card-backlog-controls" onClick={(e) => e.stopPropagation()}>
+          <button className="backlog-btn start" onClick={onStart} title="Start development">Start</button>
+        </div>
       )}
 
       <div className="card-footer">

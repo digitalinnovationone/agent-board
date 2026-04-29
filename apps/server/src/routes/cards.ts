@@ -16,6 +16,7 @@ function rowToCard(row: Record<string, unknown>): Card {
     acceptance: JSON.parse(row.acceptance as string) as AcceptanceItem[],
     createdAt: row.created_at as number,
     updatedAt: row.updated_at as number,
+    backlogPosition: row.backlog_position as number | null,
   };
 }
 
@@ -104,10 +105,18 @@ export async function cardRoutes(app: FastifyInstance) {
     const column: Column = body.startIn ?? 'Backlog';
     const acceptance: AcceptanceItem[] = body.acceptance.map((text) => ({ text, done: false }));
 
+    let backlogPosition: number | null = null;
+    if (column === 'Backlog') {
+      const maxRow = db.prepare(
+        "SELECT MAX(backlog_position) as m FROM cards WHERE column = 'Backlog'"
+      ).get() as { m: number | null };
+      backlogPosition = (maxRow.m ?? 0) + 1;
+    }
+
     db.prepare(`
-      INSERT INTO cards (id, title, description, priority, column, blocked, acceptance, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
-    `).run(id, body.title, body.description, body.priority, column, JSON.stringify(acceptance), now, now);
+      INSERT INTO cards (id, title, description, priority, column, blocked, acceptance, created_at, updated_at, backlog_position)
+      VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+    `).run(id, body.title, body.description, body.priority, column, JSON.stringify(acceptance), now, now, backlogPosition);
 
     const card = rowToCard(db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown>);
     bus.emit('ws:broadcast', { type: 'card:created', card });
@@ -153,6 +162,25 @@ export async function cardRoutes(app: FastifyInstance) {
     })();
 
     bus.emit('ws:broadcast', { type: 'card:deleted', cardId: id });
+    return { ok: true };
+  });
+
+  app.post('/api/cards/backlog/reorder', async (req, reply) => {
+    const { ids } = z.object({ ids: z.array(z.string()) }).parse(req.body);
+    db.transaction(() => {
+      ids.forEach((id, i) => db.prepare('UPDATE cards SET backlog_position = ? WHERE id = ?').run(i + 1, id));
+    })();
+    bus.emit('ws:broadcast', { type: 'backlog:reordered', ids });
+    return { ok: true };
+  });
+
+  app.post('/api/cards/:id/start', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const row = db.prepare('SELECT id, column, blocked FROM cards WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+    if (!row) return reply.status(404).send({ error: 'Not found' });
+    if (row.column !== 'Backlog') return reply.status(400).send({ error: 'Card is not in Backlog' });
+    if (row.blocked) return reply.status(400).send({ error: 'Card is blocked' });
+    bus.emit('card:start', { cardId: id });
     return { ok: true };
   });
 

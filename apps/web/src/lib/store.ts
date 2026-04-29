@@ -159,6 +159,13 @@ function reducer(state: AppState, action: Action): AppState {
           if (!agent) return state;
           return { ...state, agents: { ...state.agents, [ev.agentId]: { ...agent, status: ev.status } } };
         }
+        case 'backlog:reordered': {
+          const cards = { ...state.cards };
+          ev.ids.forEach((id, i) => {
+            if (cards[id]) cards[id] = { ...cards[id], backlogPosition: i + 1 };
+          });
+          return { ...state, cards };
+        }
         case 'status':
           return { ...state, status: ev.payload };
         default:

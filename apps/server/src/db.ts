@@ -82,6 +82,17 @@ if (!agentCols.includes('avatar')) {
   db.exec('ALTER TABLE agents ADD COLUMN avatar TEXT');
 }
 
+// Add backlog_position column for manual priority ordering in Backlog lane
+const cardCols = (db.pragma('table_info(cards)') as { name: string }[]).map((c) => c.name);
+if (!cardCols.includes('backlog_position')) {
+  db.exec('ALTER TABLE cards ADD COLUMN backlog_position INTEGER');
+  const backlogCards = db.prepare(
+    "SELECT id FROM cards WHERE column = 'Backlog' ORDER BY created_at ASC"
+  ).all() as { id: string }[];
+  const updatePos = db.prepare('UPDATE cards SET backlog_position = ? WHERE id = ?');
+  backlogCards.forEach((c, i) => updatePos.run(i + 1, c.id));
+}
+
 // Backfill default agents with avatar seeds
 const defaultAvatars: [string, string][] = [
   ['planner', 'felix'], ['scribe', 'luna'], ['forge', 'max'],
