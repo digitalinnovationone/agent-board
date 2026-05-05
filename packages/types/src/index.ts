@@ -48,6 +48,7 @@ export interface Agent {
   ownsColumn: Column | null;
   createdAt: number;
   status?: 'idle' | 'working';
+  cardId?: string;
 }
 
 export interface Card {

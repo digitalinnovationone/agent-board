@@ -61,6 +61,12 @@ type Action =
   | { type: 'SET_WORK_DIR'; workDir: string }
   | { type: 'APPLY_WS_EVENT'; event: WsEvent };
 
+function computeInFlight(cards: Record<string, Card>): number {
+  return Object.values(cards).filter(
+    (c) => c.column !== 'Backlog' && c.column !== 'Done' && !c.blocked
+  ).length;
+}
+
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SET_STATUS':
@@ -134,30 +140,35 @@ function reducer(state: AppState, action: Action): AppState {
           if (ev.type === 'card:moved') {
             const card = state.cards[ev.cardId];
             if (!card) return state;
-            return { ...state, cards: { ...state.cards, [ev.cardId]: { ...card, column: ev.to } } };
+            const newCards = { ...state.cards, [ev.cardId]: { ...card, column: ev.to } };
+            return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
           }
-          return { ...state, cards: { ...state.cards, [ev.card.id]: ev.card } };
+          const newCards = { ...state.cards, [ev.card.id]: ev.card };
+          return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
         }
         case 'card:deleted': {
           const cards = { ...state.cards };
           delete cards[ev.cardId];
           const uiOpenCardId = state.uiOpenCardId === ev.cardId ? null : state.uiOpenCardId;
-          return { ...state, cards, uiOpenCardId };
+          return { ...state, cards, uiOpenCardId, status: { ...state.status, inFlight: computeInFlight(cards) } };
         }
         case 'card:blocked': {
           const card = state.cards[ev.cardId];
           if (!card) return state;
-          return { ...state, cards: { ...state.cards, [ev.cardId]: { ...card, blocked: true, blockReason: ev.reason ?? null } } };
+          const newCards = { ...state.cards, [ev.cardId]: { ...card, blocked: true, blockReason: ev.reason ?? null } };
+          return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
         }
         case 'card:unblocked': {
           const card = state.cards[ev.cardId];
           if (!card) return state;
-          return { ...state, cards: { ...state.cards, [ev.cardId]: { ...card, blocked: false, blockReason: null } } };
+          const newCards = { ...state.cards, [ev.cardId]: { ...card, blocked: false, blockReason: null } };
+          return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
         }
         case 'agent:status': {
           const agent = state.agents[ev.agentId];
           if (!agent) return state;
-          return { ...state, agents: { ...state.agents, [ev.agentId]: { ...agent, status: ev.status } } };
+          const updated = { ...agent, status: ev.status, cardId: ev.status === 'working' ? ev.cardId : undefined };
+          return { ...state, agents: { ...state.agents, [ev.agentId]: updated } };
         }
         case 'backlog:reordered': {
           const cards = { ...state.cards };

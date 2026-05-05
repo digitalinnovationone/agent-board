@@ -102,7 +102,7 @@ export function Column({ column, cards, agents, onCardClick, onReorder, onStart 
         onDragOver={(e) => e.preventDefault()}
       >
         {cards.map((card, idx) => {
-          const worker = workingAgents.find((a) => a.status === 'working');
+          const worker = workingAgents.find((a) => a.cardId === card.id);
           return (
             <div
               key={card.id}
