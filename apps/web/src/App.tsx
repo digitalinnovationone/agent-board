@@ -136,6 +136,7 @@ export default function App() {
         <ActivityLog
           collapsed={!state.panels.logOpen}
           onToggle={() => dispatch({ type: 'TOGGLE_LOG_RAIL' })}
+          feed={state.activityFeed}
         />
       </div>
 

@@ -118,6 +118,15 @@ export interface StatusSnapshot {
   blocked: number;
 }
 
+export interface ActivityFeedEntry {
+  id: string;
+  timestamp: number;
+  eventType: WsEvent['type'];
+  label: string;
+  cardId?: string;
+  agentId?: string;
+}
+
 export type WsEvent =
   | { type: 'agent:created' | 'agent:updated' | 'agent:deleted'; agent: Agent }
   | { type: 'card:created' | 'card:updated'; card: Card }

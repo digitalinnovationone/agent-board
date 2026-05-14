@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react';
-import type { Agent, Card, CardDetail, ColumnDef, StatusSnapshot, WsEvent } from '@agent-board/types';
+import type { ActivityFeedEntry, Agent, Card, CardDetail, ColumnDef, StatusSnapshot, WsEvent } from '@agent-board/types';
 
 export type WsState = 'connecting' | 'connected' | 'disconnected';
 
@@ -16,6 +16,7 @@ export interface AppState {
   panels: { agentsOpen: boolean; logOpen: boolean };
   workDir: string;
   columns: ColumnDef[];
+  activityFeed: ActivityFeedEntry[];
 }
 
 const initialStatus: StatusSnapshot = {
@@ -41,6 +42,7 @@ export const initialState: AppState = {
   panels: { agentsOpen: true, logOpen: true },
   workDir: '',
   columns: [],
+  activityFeed: [],
 };
 
 type Action =
@@ -63,6 +65,20 @@ type Action =
   | { type: 'SET_WORK_DIR'; workDir: string }
   | { type: 'SET_COLUMNS'; columns: ColumnDef[] }
   | { type: 'APPLY_WS_EVENT'; event: WsEvent };
+
+let _feedSeq = 0;
+function mkEntry(
+  eventType: WsEvent['type'],
+  label: string,
+  extras?: { cardId?: string; agentId?: string }
+): ActivityFeedEntry {
+  return { id: `${Date.now()}-${++_feedSeq}`, timestamp: Date.now(), eventType, label, ...extras };
+}
+
+function pushFeed(feed: ActivityFeedEntry[], entry: ActivityFeedEntry): ActivityFeedEntry[] {
+  const next = [entry, ...feed];
+  return next.length > 200 ? next.slice(0, 200) : next;
+}
 
 function computeInFlight(cards: Record<string, Card>): number {
   return Object.values(cards).filter(
@@ -131,49 +147,124 @@ function reducer(state: AppState, action: Action): AppState {
       const ev = action.event;
       switch (ev.type) {
         case 'agent:created':
+          return {
+            ...state,
+            agents: { ...state.agents, [ev.agent.id]: ev.agent },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('agent:created', `${ev.agent.name} joined`, { agentId: ev.agent.id })),
+          };
         case 'agent:updated':
           return { ...state, agents: { ...state.agents, [ev.agent.id]: ev.agent } };
         case 'agent:deleted': {
           const agents = { ...state.agents };
           delete agents[ev.agent.id];
           const uiOpenAgentId = state.uiOpenAgentId === ev.agent.id ? null : state.uiOpenAgentId;
-          return { ...state, agents, uiOpenAgentId };
+          return {
+            ...state,
+            agents,
+            uiOpenAgentId,
+            activityFeed: pushFeed(state.activityFeed, mkEntry('agent:deleted', `${ev.agent.name} removed`)),
+          };
         }
-        case 'card:created':
-        case 'card:updated':
-        case 'card:moved': {
-          if (ev.type === 'card:moved') {
-            const card = state.cards[ev.cardId];
-            if (!card) return state;
-            const newCards = { ...state.cards, [ev.cardId]: { ...card, column: ev.to } };
-            return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
-          }
+        case 'card:created': {
+          const newCards = { ...state.cards, [ev.card.id]: ev.card };
+          return {
+            ...state,
+            cards: newCards,
+            status: { ...state.status, inFlight: computeInFlight(newCards) },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('card:created', `"${ev.card.title}" added to ${ev.card.column}`, { cardId: ev.card.id })),
+          };
+        }
+        case 'card:updated': {
           const newCards = { ...state.cards, [ev.card.id]: ev.card };
           return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
         }
+        case 'card:moved': {
+          const card = state.cards[ev.cardId];
+          if (!card) return state;
+          const newCards = { ...state.cards, [ev.cardId]: { ...card, column: ev.to } };
+          return {
+            ...state,
+            cards: newCards,
+            status: { ...state.status, inFlight: computeInFlight(newCards) },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('card:moved', `"${card.title}" → ${ev.to}`, { cardId: ev.cardId })),
+          };
+        }
         case 'card:deleted': {
+          const deletedCard = state.cards[ev.cardId];
           const cards = { ...state.cards };
           delete cards[ev.cardId];
           const uiOpenCardId = state.uiOpenCardId === ev.cardId ? null : state.uiOpenCardId;
-          return { ...state, cards, uiOpenCardId, status: { ...state.status, inFlight: computeInFlight(cards) } };
+          return {
+            ...state,
+            cards,
+            uiOpenCardId,
+            status: { ...state.status, inFlight: computeInFlight(cards) },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('card:deleted', deletedCard ? `"${deletedCard.title}" deleted` : 'Card deleted', { cardId: ev.cardId })),
+          };
         }
         case 'card:blocked': {
           const card = state.cards[ev.cardId];
           if (!card) return state;
           const newCards = { ...state.cards, [ev.cardId]: { ...card, blocked: true, blockReason: ev.reason ?? null } };
-          return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
+          return {
+            ...state,
+            cards: newCards,
+            status: { ...state.status, inFlight: computeInFlight(newCards) },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('card:blocked', `"${card.title}" blocked${ev.reason ? `: ${ev.reason}` : ''}`, { cardId: ev.cardId })),
+          };
         }
         case 'card:unblocked': {
           const card = state.cards[ev.cardId];
           if (!card) return state;
           const newCards = { ...state.cards, [ev.cardId]: { ...card, blocked: false, blockReason: null } };
-          return { ...state, cards: newCards, status: { ...state.status, inFlight: computeInFlight(newCards) } };
+          return {
+            ...state,
+            cards: newCards,
+            status: { ...state.status, inFlight: computeInFlight(newCards) },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('card:unblocked', `"${card.title}" unblocked`, { cardId: ev.cardId })),
+          };
         }
         case 'agent:status': {
           const agent = state.agents[ev.agentId];
           if (!agent) return state;
           const updated = { ...agent, status: ev.status, cardId: ev.status === 'working' ? ev.cardId : undefined };
-          return { ...state, agents: { ...state.agents, [ev.agentId]: updated } };
+          const card = ev.cardId ? state.cards[ev.cardId] : undefined;
+          const label = ev.status === 'working'
+            ? `${agent.name} started${card ? ` "${card.title}"` : ''}`
+            : `${agent.name} idle`;
+          return {
+            ...state,
+            agents: { ...state.agents, [ev.agentId]: updated },
+            activityFeed: pushFeed(state.activityFeed, mkEntry('agent:status', label, { agentId: ev.agentId, cardId: ev.cardId })),
+          };
+        }
+        case 'activity:added': {
+          const label = ev.activity.target
+            ? `${ev.activity.verb} "${ev.activity.target}"`
+            : ev.activity.verb;
+          return {
+            ...state,
+            activityFeed: pushFeed(state.activityFeed, mkEntry('activity:added', label, { cardId: ev.cardId, agentId: ev.activity.agentId ?? undefined })),
+          };
+        }
+        case 'artifact:added': {
+          const card = state.cards[ev.cardId];
+          const label = card
+            ? `${ev.artifact.kind}: ${ev.artifact.title} on "${card.title}"`
+            : `${ev.artifact.kind}: ${ev.artifact.title}`;
+          return {
+            ...state,
+            activityFeed: pushFeed(state.activityFeed, mkEntry('artifact:added', label, { cardId: ev.cardId })),
+          };
+        }
+        case 'comment:added': {
+          const card = state.cards[ev.cardId];
+          const preview = ev.comment.text.length > 60 ? ev.comment.text.slice(0, 60) + '…' : ev.comment.text;
+          const label = card ? `Comment on "${card.title}": ${preview}` : `Comment: ${preview}`;
+          return {
+            ...state,
+            activityFeed: pushFeed(state.activityFeed, mkEntry('comment:added', label, { cardId: ev.cardId })),
+          };
         }
         case 'backlog:reordered': {
           const cards = { ...state.cards };
