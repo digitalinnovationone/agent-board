@@ -27,7 +27,7 @@ export function Card({ card, agents, workingAgentId, onClick, backlogRank, isFir
   const isBacklog = backlogRank !== undefined;
 
   return (
-    <article className="card" data-state={state} onClick={onClick}>
+    <article className="card" data-state={state} onClick={onClick} style={card.hidden ? { opacity: 0.45 } : undefined}>
       <div className="card-header">
         <span className="card-id">{card.id}</span>
         {isBacklog && <span className="card-rank">#{backlogRank}</span>}

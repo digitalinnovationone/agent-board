@@ -17,6 +17,7 @@ function rowToCard(row: Record<string, unknown>): Card {
     createdAt: row.created_at as number,
     updatedAt: row.updated_at as number,
     backlogPosition: row.backlog_position as number | null,
+    hidden: Boolean(row.hidden),
   };
 }
 
@@ -76,6 +77,7 @@ const PatchCardBody = z.object({
   description: z.string().optional(),
   priority: z.enum(['L', 'M', 'H']).optional(),
   acceptance: z.array(z.object({ text: z.string(), done: z.boolean() })).optional(),
+  hidden: z.boolean().optional(),
 });
 
 export async function cardRoutes(app: FastifyInstance) {
@@ -140,6 +142,7 @@ export async function cardRoutes(app: FastifyInstance) {
     if (body.description !== undefined) { fields.push('description = ?'); values.push(body.description); }
     if (body.priority !== undefined) { fields.push('priority = ?'); values.push(body.priority); }
     if (body.acceptance !== undefined) { fields.push('acceptance = ?'); values.push(JSON.stringify(body.acceptance)); }
+    if (body.hidden !== undefined) { fields.push('hidden = ?'); values.push(body.hidden ? 1 : 0); }
 
     values.push(id);
     db.prepare(`UPDATE cards SET ${fields.join(', ')} WHERE id = ?`).run(...values);
@@ -163,6 +166,28 @@ export async function cardRoutes(app: FastifyInstance) {
 
     bus.emit('ws:broadcast', { type: 'card:deleted', cardId: id });
     return { ok: true };
+  });
+
+  app.post('/api/cards/:id/hide', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const row = db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+    if (!row) return reply.status(404).send({ error: 'Not found' });
+    const now = Date.now();
+    db.prepare('UPDATE cards SET hidden = 1, updated_at = ? WHERE id = ?').run(now, id);
+    const card = rowToCard(db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown>);
+    bus.emit('ws:broadcast', { type: 'card:updated', card });
+    return card;
+  });
+
+  app.post('/api/cards/:id/unhide', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const row = db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+    if (!row) return reply.status(404).send({ error: 'Not found' });
+    const now = Date.now();
+    db.prepare('UPDATE cards SET hidden = 0, updated_at = ? WHERE id = ?').run(now, id);
+    const card = rowToCard(db.prepare('SELECT * FROM cards WHERE id = ?').get(id) as Record<string, unknown>);
+    bus.emit('ws:broadcast', { type: 'card:updated', card });
+    return card;
   });
 
   app.post('/api/cards/backlog/reorder', async (req, reply) => {

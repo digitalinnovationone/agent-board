@@ -145,6 +145,7 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
           acceptance: JSON.parse(c.acceptance as string) as AcceptanceItem[],
           createdAt: c.created_at as number, updatedAt: c.updated_at as number,
           backlogPosition: c.backlog_position as number | null,
+          hidden: Boolean(c.hidden),
         },
       });
     }
@@ -189,6 +190,7 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
           acceptance: JSON.parse(updatedRow.acceptance as string) as AcceptanceItem[],
           createdAt: updatedRow.created_at as number, updatedAt: updatedRow.updated_at as number,
           backlogPosition: updatedRow.backlog_position as number | null,
+          hidden: Boolean(updatedRow.hidden),
         },
       });
 

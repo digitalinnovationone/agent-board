@@ -25,6 +25,7 @@ function loadCardDetail(cardId: string): CardDetail | null {
     createdAt: row.created_at as number,
     updatedAt: row.updated_at as number,
     backlogPosition: row.backlog_position as number | null,
+    hidden: Boolean(row.hidden),
     activity: activities,
     artifacts,
     comments,

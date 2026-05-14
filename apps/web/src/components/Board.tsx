@@ -6,14 +6,17 @@ interface Props {
   columns: ColumnDef[];
   cards: Record<string, Card>;
   agents: Record<string, Agent>;
+  showHidden: boolean;
   onCardClick: (id: string) => void;
 }
 
-export function Board({ columns, cards, agents, onCardClick }: Props) {
+export function Board({ columns, cards, agents, showHidden, onCardClick }: Props) {
+  const visibleCards = Object.values(cards).filter((c) => showHidden || !c.hidden);
+
   const cardsByColumn = Object.fromEntries(
     columns.map((col) => [
       col.name,
-      Object.values(cards).filter((c) => c.column === col.name),
+      visibleCards.filter((c) => c.column === col.name),
     ])
   );
 

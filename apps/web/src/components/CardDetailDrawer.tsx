@@ -90,6 +90,7 @@ export function CardDetailDrawer({ cardId, columns, agents, onClose }: Props) {
   const [posting, setPosting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [hiding, setHiding] = useState(false);
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -103,6 +104,22 @@ export function CardDetailDrawer({ cardId, columns, agents, onClose }: Props) {
     } catch (err) {
       setDeleteError(String(err));
       setDeleting(false);
+    }
+  };
+
+  const handleHideToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!detail) return;
+    setHiding(true);
+    try {
+      if (detail.hidden) {
+        await api.cards.unhide(cardId);
+      } else {
+        await api.cards.hide(cardId);
+      }
+      onClose();
+    } catch {
+      setHiding(false);
     }
   };
 
@@ -169,6 +186,27 @@ export function CardDetailDrawer({ cardId, columns, agents, onClose }: Props) {
               </h2>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--g-space-1)', flexShrink: 0, marginTop: 2 }}>
+              {detail && (
+                <button
+                  className="icon-btn"
+                  onClick={handleHideToggle}
+                  disabled={hiding}
+                  title={detail.hidden ? 'Restore card' : 'Archive card'}
+                  style={{ color: detail.hidden ? 'var(--g-color-accent)' : 'var(--g-color-text-3)' }}
+                >
+                  {detail.hidden ? (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <ellipse cx="8" cy="8" rx="7" ry="5" />
+                      <circle cx="8" cy="8" r="2.5" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 1l14 14M6.5 6.6a3 3 0 0 0 4 3.9M3.4 3.5C2 4.7 1 6.2 1 8c0 0 2.7 5 7 5a7 7 0 0 0 3.6-1" />
+                      <path d="M7 3.1C7.3 3 7.6 3 8 3c4.3 0 7 5 7 5s-.5.9-1.4 1.8" />
+                    </svg>
+                  )}
+                </button>
+              )}
               <button
                 className="icon-btn"
                 onClick={(e) => handleDelete(e)}

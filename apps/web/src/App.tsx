@@ -78,6 +78,7 @@ export default function App() {
   }, [state.uiOpenCardId, state.uiOpenAgentId, state.uiOpenModal, dispatch]);
 
   const agents = Object.values(state.agents);
+  const hiddenCount = Object.values(state.cards).filter((c) => c.hidden).length;
 
   return (
     <div className="app-shell">
@@ -102,6 +103,31 @@ export default function App() {
             </svg>
             Office
           </button>
+          {hiddenCount > 0 && (
+            <button
+              className="btn"
+              style={{
+                background: state.showHidden ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: '#fff',
+              }}
+              onClick={() => dispatch({ type: 'TOGGLE_SHOW_HIDDEN' })}
+              title={state.showHidden ? 'Hide archived cards' : 'Show archived cards'}
+            >
+              {state.showHidden ? (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 1l14 14M6.5 6.6a3 3 0 0 0 4 3.9M3.4 3.5C2 4.7 1 6.2 1 8c0 0 2.7 5 7 5a7 7 0 0 0 3.6-1" />
+                  <path d="M7 3.1C7.3 3 7.6 3 8 3c4.3 0 7 5 7 5s-.5.9-1.4 1.8" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <ellipse cx="8" cy="8" rx="7" ry="5" />
+                  <circle cx="8" cy="8" r="2.5" />
+                </svg>
+              )}
+              Archived ({hiddenCount})
+            </button>
+          )}
           <button
             className="btn"
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}
@@ -129,6 +155,7 @@ export default function App() {
             columns={state.columns}
             cards={state.cards}
             agents={state.agents}
+            showHidden={state.showHidden}
             onCardClick={(id) => dispatch({ type: 'OPEN_CARD', id })}
           />
         )}

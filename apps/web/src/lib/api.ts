@@ -40,6 +40,8 @@ export const api = {
     start: (id: string) =>
       request<{ ok: boolean }>(`/api/cards/${id}/start`, { method: 'POST', body: JSON.stringify({}) }),
     delete: (id: string) => request<{ ok: boolean }>(`/api/cards/${id}`, { method: 'DELETE' }),
+    hide: (id: string) => request<Card>(`/api/cards/${id}/hide`, { method: 'POST', body: '{}' }),
+    unhide: (id: string) => request<Card>(`/api/cards/${id}/unhide`, { method: 'POST', body: '{}' }),
   },
   comments: {
     create: (cardId: string, body: { text: string; addresses?: string }) =>
