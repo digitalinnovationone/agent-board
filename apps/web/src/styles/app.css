@@ -557,6 +557,56 @@ body {
   padding-top: var(--g-space-9);
 }
 
+.activity-feed {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--g-space-1);
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: baseline;
+  gap: var(--g-space-3);
+  padding: var(--g-space-2) 0;
+  border-bottom: var(--g-border-hair) solid var(--g-color-border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.activity-dot--agent   { background: #7c3aed; }
+.activity-dot--card    { background: #0ea5e9; }
+.activity-dot--move    { background: #f59e0b; }
+.activity-dot--block   { background: #ef4444; }
+.activity-dot--artifact { background: #8b5cf6; }
+.activity-dot--comment { background: #10b981; }
+.activity-dot--note    { background: #6366f1; }
+
+.activity-item-label {
+  font-size: var(--g-text-xs);
+  color: var(--g-color-text-2);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.activity-item-time {
+  font-size: var(--g-text-xs);
+  color: var(--g-color-text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── Status Bar ─────────────────────────────────────────── */
 
 .status-bar {

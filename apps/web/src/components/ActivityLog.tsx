@@ -1,9 +1,43 @@
+import { useEffect, useState } from 'react';
+import type { ActivityFeedEntry } from '@agent-board/types';
+
 interface Props {
   collapsed: boolean;
   onToggle: () => void;
+  feed: ActivityFeedEntry[];
 }
 
-export function ActivityLog({ collapsed, onToggle }: Props) {
+type DotKind = 'agent' | 'card' | 'move' | 'block' | 'artifact' | 'comment' | 'note';
+
+function dotKind(eventType: ActivityFeedEntry['eventType']): DotKind {
+  if (eventType === 'agent:created' || eventType === 'agent:deleted' || eventType === 'agent:status') return 'agent';
+  if (eventType === 'card:moved') return 'move';
+  if (eventType === 'card:blocked' || eventType === 'card:unblocked') return 'block';
+  if (eventType === 'artifact:added') return 'artifact';
+  if (eventType === 'comment:added') return 'comment';
+  if (eventType === 'activity:added') return 'note';
+  return 'card';
+}
+
+function relativeTime(ts: number): string {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 5) return 'now';
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+export function ActivityLog({ collapsed, onToggle, feed }: Props) {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <aside className={`activity-rail${collapsed ? ' collapsed' : ''}`}>
       <div className="activity-rail-header">
@@ -19,7 +53,19 @@ export function ActivityLog({ collapsed, onToggle }: Props) {
 
       {!collapsed && (
         <div className="activity-body">
-          <p className="activity-empty">No activity yet.</p>
+          {feed.length === 0 ? (
+            <p className="activity-empty">No activity yet.</p>
+          ) : (
+            <ul className="activity-feed">
+              {feed.map((entry) => (
+                <li key={entry.id} className="activity-item">
+                  <span className={`activity-dot activity-dot--${dotKind(entry.eventType)}`} />
+                  <span className="activity-item-label">{entry.label}</span>
+                  <span className="activity-item-time">{relativeTime(entry.timestamp)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </aside>
