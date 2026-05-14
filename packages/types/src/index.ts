@@ -1,19 +1,11 @@
-export type Column =
-  | 'Backlog'
-  | 'Specification'
-  | 'Development'
-  | 'Testing'
-  | 'Deploy'
-  | 'Done';
+export type Column = string;
 
-export const COLUMNS: Column[] = [
-  'Backlog',
-  'Specification',
-  'Development',
-  'Testing',
-  'Deploy',
-  'Done',
-];
+export interface ColumnDef {
+  name: string;
+  position: number;
+  wipCap: number;
+  locked: boolean;
+}
 
 export type Glyph =
   | 'triangle'
@@ -127,4 +119,5 @@ export type WsEvent =
   | { type: 'comment:added'; cardId: string; comment: Comment }
   | { type: 'agent:status'; agentId: string; status: 'idle' | 'working'; cardId?: string }
   | { type: 'status'; payload: StatusSnapshot }
-  | { type: 'backlog:reordered'; ids: string[] };
+  | { type: 'backlog:reordered'; ids: string[] }
+  | { type: 'columns:updated'; columns: ColumnDef[] };

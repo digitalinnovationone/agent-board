@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { Column, Priority } from '@agent-board/types';
+import type { ColumnDef, Priority } from '@agent-board/types';
 import { api } from '../lib/api';
 
 interface Props {
+  columns: ColumnDef[];
   onClose: () => void;
 }
 
@@ -12,21 +13,12 @@ const PRIORITY_OPTIONS: { value: Priority; label: string; color: string }[] = [
   { value: 'H', label: 'High', color: '#f59e0b' },
 ];
 
-const START_OPTIONS: { value: Column; label: string }[] = [
-  { value: 'Backlog', label: 'Backlog' },
-  { value: 'Specification', label: 'Specification' },
-  { value: 'Development', label: 'Development' },
-  { value: 'Testing', label: 'Testing' },
-  { value: 'Deploy', label: 'Deploy' },
-  { value: 'Done', label: 'Done' },
-];
-
-export function NewCardModal({ onClose }: Props) {
+export function NewCardModal({ columns, onClose }: Props) {
   const [nextId, setNextId] = useState('US-??');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('M');
-  const [startIn, setStartIn] = useState<Column>('Backlog');
+  const [startIn, setStartIn] = useState<string>('Backlog');
   const [criteria, setCriteria] = useState<string[]>(['']);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,15 +138,15 @@ export function NewCardModal({ onClose }: Props) {
             <div className="field">
               <span className="label">Start in</span>
               <div className="pill-group" style={{ flexDirection: 'column', gap: 'var(--g-space-2)' }}>
-                {START_OPTIONS.map((opt) => (
+                {columns.map((col) => (
                   <button
-                    key={opt.value}
-                    className={`pill${startIn === opt.value ? ' selected' : ''}`}
-                    onClick={() => setStartIn(opt.value)}
+                    key={col.name}
+                    className={`pill${startIn === col.name ? ' selected' : ''}`}
+                    onClick={() => setStartIn(col.name)}
                     type="button"
                     style={{ justifyContent: 'flex-start' }}
                   >
-                    {opt.label}
+                    {col.name}
                   </button>
                 ))}
               </div>

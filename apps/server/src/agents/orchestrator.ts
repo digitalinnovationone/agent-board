@@ -75,9 +75,22 @@ export function startOrchestrator() {
   });
 
   bus.on('card:start', async ({ cardId }) => {
-    const row = db.prepare('SELECT column FROM cards WHERE id = ?').get(cardId) as { column: string } | undefined;
-    if (!row) return;
-    await handleEntry(cardId, row.column);
+    const row = db.prepare('SELECT column, blocked FROM cards WHERE id = ?').get(cardId) as { column: string; blocked: number } | undefined;
+    if (!row || row.blocked) return;
+
+    const nextCol = (db.prepare(
+      'SELECT name FROM columns WHERE position = (SELECT position + 1 FROM columns WHERE name = ?)'
+    ).get(row.column) as { name: string } | undefined)?.name;
+    if (!nextCol) return;
+
+    const now = Date.now();
+    db.prepare('UPDATE cards SET column = ?, updated_at = ? WHERE id = ?').run(nextCol, now, cardId);
+    db.prepare(
+      "INSERT INTO activity (card_id, agent_id, kind, verb, target, t) VALUES (?, NULL, 'move', 'started card', ?, ?)"
+    ).run(cardId, nextCol, now);
+
+    bus.emit('ws:broadcast', { type: 'card:moved', cardId, from: row.column, to: nextCol });
+    bus.emit('card:entered', { cardId, column: nextCol });
   });
 
   console.log('[orchestrator] started');

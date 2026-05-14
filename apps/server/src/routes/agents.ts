@@ -28,10 +28,7 @@ const AgentBody = z.object({
   avatar: z.string().nullable().optional(),
   systemPrompt: z.string().nullable().optional(),
   tools: z.array(z.string()),
-  ownsColumn: z
-    .enum(['Backlog', 'Specification', 'Development', 'Testing', 'Deploy', 'Done'])
-    .nullable()
-    .optional(),
+  ownsColumn: z.string().nullable().optional(),
 });
 
 export async function agentRoutes(app: FastifyInstance) {

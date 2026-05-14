@@ -11,6 +11,7 @@ import { agentRoutes } from './routes/agents.js';
 import { cardRoutes } from './routes/cards.js';
 import { commentRoutes } from './routes/comments.js';
 import { configRoutes } from './routes/config.js';
+import { columnRoutes } from './routes/columns.js';
 
 const app = Fastify({ logger: { level: 'warn' } });
 
@@ -26,6 +27,7 @@ await app.register(agentRoutes);
 await app.register(cardRoutes);
 await app.register(commentRoutes);
 await app.register(configRoutes);
+await app.register(columnRoutes);
 
 seedAgents();
 startOrchestrator();

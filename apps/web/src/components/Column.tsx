@@ -1,19 +1,11 @@
 import { useState } from 'react';
-import type { Column as ColumnType, Card as CardType, Agent } from '@agent-board/types';
+import type { Card as CardType, Agent } from '@agent-board/types';
 import { Card } from './Card';
 import { AgentChip } from './AgentChip';
 
-const WIP_CAPS: Record<ColumnType, number> = {
-  Backlog: 10,
-  Specification: 2,
-  Development: 2,
-  Testing: 2,
-  Deploy: 2,
-  Done: 999,
-};
-
 interface Props {
-  column: ColumnType;
+  column: string;
+  wipCap: number;
   cards: CardType[];
   agents: Record<string, Agent>;
   onCardClick: (id: string) => void;
@@ -21,8 +13,8 @@ interface Props {
   onStart?: (id: string) => void;
 }
 
-export function Column({ column, cards, agents, onCardClick, onReorder, onStart }: Props) {
-  const cap = WIP_CAPS[column];
+export function Column({ column, wipCap, cards, agents, onCardClick, onReorder, onStart }: Props) {
+  const cap = wipCap;
   const count = cards.length;
   const over = count > cap && cap < 999;
   const isBacklog = onReorder !== undefined;

@@ -1,4 +1,4 @@
-import type { Agent, Card, CardDetail, Comment, StatusSnapshot } from '@agent-board/types';
+import type { Agent, Card, CardDetail, ColumnDef, Comment, StatusSnapshot } from '@agent-board/types';
 
 const BASE = 'http://localhost:4000';
 
@@ -44,5 +44,14 @@ export const api = {
   comments: {
     create: (cardId: string, body: { text: string; addresses?: string }) =>
       request<Comment>(`/api/cards/${cardId}/comments`, { method: 'POST', body: JSON.stringify(body) }),
+  },
+  columns: {
+    list: () => request<ColumnDef[]>('/api/columns'),
+    create: (name: string) => request<ColumnDef>('/api/columns', { method: 'POST', body: JSON.stringify({ name }) }),
+    delete: (name: string) => request<{ ok: boolean }>(`/api/columns/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    patch: (name: string, body: { name?: string; wipCap?: number }) =>
+      request<ColumnDef>(`/api/columns/${encodeURIComponent(name)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    reorder: (names: string[]) =>
+      request<ColumnDef[]>('/api/columns/reorder', { method: 'POST', body: JSON.stringify({ names }) }),
   },
 };

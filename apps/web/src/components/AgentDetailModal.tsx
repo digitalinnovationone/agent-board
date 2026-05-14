@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Agent, Glyph, Column } from '@agent-board/types';
-import { COLUMNS } from '@agent-board/types';
+import type { Agent, Glyph, ColumnDef } from '@agent-board/types';
 import { AgentChip } from './AgentChip';
 import { api } from '../lib/api';
 
 interface Props {
   agentId: string;
   agents: Record<string, Agent>;
+  columns: ColumnDef[];
   onClose: () => void;
 }
 
@@ -16,7 +16,7 @@ const AVATAR_SEEDS = [
 ];
 
 
-export function AgentDetailModal({ agentId, agents, onClose }: Props) {
+export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
   const agent = agents[agentId];
 
   const [mode, setMode] = useState<'view' | 'edit'>('view');
@@ -25,7 +25,7 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
   const [hue, setHue] = useState(220);
   const [avatar, setAvatar] = useState(AVATAR_SEEDS[0]);
   const [role, setRole] = useState('');
-  const [ownsColumn, setOwnsColumn] = useState<Column | null>(null);
+  const [ownsColumn, setOwnsColumn] = useState<string | null>(null);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [tools, setTools] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -243,12 +243,12 @@ export function AgentDetailModal({ agentId, agents, onClose }: Props) {
                 <select
                   className="input"
                   value={ownsColumn ?? ''}
-                  onChange={(e) => setOwnsColumn((e.target.value as Column) || null)}
+                  onChange={(e) => setOwnsColumn(e.target.value || null)}
                   style={{ cursor: 'pointer' }}
                 >
                   <option value="">None (observer)</option>
-                  {COLUMNS.map((col) => (
-                    <option key={col} value={col}>{col}</option>
+                  {columns.map((col) => (
+                    <option key={col.name} value={col.name}>{col.name}</option>
                   ))}
                 </select>
               </div>

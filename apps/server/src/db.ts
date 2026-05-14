@@ -74,6 +74,13 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS columns (
+    name     TEXT PRIMARY KEY,
+    position INTEGER NOT NULL UNIQUE,
+    wip_cap  INTEGER NOT NULL DEFAULT 2,
+    locked   INTEGER NOT NULL DEFAULT 0
+  );
 `);
 
 // Add avatar column to existing databases
@@ -91,6 +98,20 @@ if (!cardCols.includes('backlog_position')) {
   ).all() as { id: string }[];
   const updatePos = db.prepare('UPDATE cards SET backlog_position = ? WHERE id = ?');
   backlogCards.forEach((c, i) => updatePos.run(i + 1, c.id));
+}
+
+// Seed columns table on first run
+const colCount = (db.prepare('SELECT COUNT(*) as c FROM columns').get() as { c: number }).c;
+if (colCount === 0) {
+  const insertCol = db.prepare('INSERT INTO columns (name, position, wip_cap, locked) VALUES (?, ?, ?, ?)');
+  db.transaction(() => {
+    insertCol.run('Backlog',       0, 10,  1);
+    insertCol.run('Specification', 1,  2,  0);
+    insertCol.run('Development',   2,  2,  0);
+    insertCol.run('Testing',       3,  2,  0);
+    insertCol.run('Deploy',        4,  2,  0);
+    insertCol.run('Done',          5, 999, 1);
+  })();
 }
 
 // Backfill default agents with avatar seeds

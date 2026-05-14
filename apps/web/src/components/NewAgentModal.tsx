@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
-import type { Glyph, Column } from '@agent-board/types';
-import { COLUMNS } from '@agent-board/types';
+import type { Glyph, ColumnDef } from '@agent-board/types';
 import { AgentChip } from './AgentChip';
 import { api } from '../lib/api';
 
 interface Props {
+  columns: ColumnDef[];
   onClose: () => void;
 }
 
@@ -14,11 +14,11 @@ const AVATAR_SEEDS = [
 ];
 
 const ROLE_TEMPLATES = [
-  { label: 'Product Owner', role: 'Product Owner', glyph: 'triangle' as Glyph, hue: 260, ownsColumn: 'Backlog' as Column },
-  { label: 'Spec Writer', role: 'Spec Writer', glyph: 'square' as Glyph, hue: 200, ownsColumn: 'Specification' as Column },
-  { label: 'Backend Dev', role: 'Backend Dev', glyph: 'diamond' as Glyph, hue: 30, ownsColumn: 'Development' as Column },
-  { label: 'Frontend Dev', role: 'Frontend Dev', glyph: 'circle' as Glyph, hue: 160, ownsColumn: 'Development' as Column },
-  { label: 'DevOps', role: 'DevOps', glyph: 'chevron' as Glyph, hue: 100, ownsColumn: 'Deploy' as Column },
+  { label: 'Product Owner', role: 'Product Owner', glyph: 'triangle' as Glyph, hue: 260, ownsColumn: 'Backlog' },
+  { label: 'Spec Writer', role: 'Spec Writer', glyph: 'square' as Glyph, hue: 200, ownsColumn: 'Specification' },
+  { label: 'Backend Dev', role: 'Backend Dev', glyph: 'diamond' as Glyph, hue: 30, ownsColumn: 'Development' },
+  { label: 'Frontend Dev', role: 'Frontend Dev', glyph: 'circle' as Glyph, hue: 160, ownsColumn: 'Development' },
+  { label: 'DevOps', role: 'DevOps', glyph: 'chevron' as Glyph, hue: 100, ownsColumn: 'Deploy' },
   { label: 'Custom…', role: '', glyph: 'hex' as Glyph, hue: 340, ownsColumn: null },
 ];
 
@@ -26,14 +26,14 @@ function toHandle(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export function NewAgentModal({ onClose }: Props) {
+export function NewAgentModal({ columns, onClose }: Props) {
   const [name, setName] = useState('');
   const [glyph, setGlyph] = useState<Glyph>('hex');
   const [hue, setHue] = useState(220);
   const [avatar, setAvatar] = useState(AVATAR_SEEDS[0]);
   const [roleTemplate, setRoleTemplate] = useState<string | null>(null);
   const [role, setRole] = useState('');
-  const [ownsColumn, setOwnsColumn] = useState<Column | null>(null);
+  const [ownsColumn, setOwnsColumn] = useState<string | null>(null);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [tools, setTools] = useState<string[]>(['read', 'write']);
   const [submitting, setSubmitting] = useState(false);
@@ -161,12 +161,12 @@ export function NewAgentModal({ onClose }: Props) {
             <select
               className="input"
               value={ownsColumn ?? ''}
-              onChange={(e) => setOwnsColumn((e.target.value as Column) || null)}
+              onChange={(e) => setOwnsColumn(e.target.value || null)}
               style={{ cursor: 'pointer' }}
             >
               <option value="">None (observer)</option>
-              {COLUMNS.map((col) => (
-                <option key={col} value={col}>{col}</option>
+              {columns.map((col) => (
+                <option key={col.name} value={col.name}>{col.name}</option>
               ))}
             </select>
           </div>
