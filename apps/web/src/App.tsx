@@ -23,16 +23,18 @@ export default function App() {
   useEffect(() => {
     async function bootstrap() {
       try {
-        const [status, agents, cards, config] = await Promise.all([
+        const [status, agents, cards, config, columns] = await Promise.all([
           api.status(),
           api.agents.list(),
           api.cards.list(),
           api.config.get(),
+          api.columns.list(),
         ]);
         dispatch({ type: 'SET_STATUS', payload: status });
         dispatch({ type: 'SET_AGENTS', agents });
         dispatch({ type: 'SET_CARDS', cards });
         dispatch({ type: 'SET_WORK_DIR', workDir: config.workDir });
+        dispatch({ type: 'SET_COLUMNS', columns });
       } catch {
         // server may not be up yet
       }
@@ -45,12 +47,13 @@ export default function App() {
     ws.onStatus((connected) => {
       dispatch({ type: 'SET_WS_CONNECTED', connected });
       if (connected) {
-        Promise.all([api.status(), api.agents.list(), api.cards.list(), api.config.get()])
-          .then(([status, agents, cards, config]) => {
+        Promise.all([api.status(), api.agents.list(), api.cards.list(), api.config.get(), api.columns.list()])
+          .then(([status, agents, cards, config, columns]) => {
             dispatch({ type: 'SET_STATUS', payload: status });
             dispatch({ type: 'SET_AGENTS', agents });
             dispatch({ type: 'SET_CARDS', cards });
             dispatch({ type: 'SET_WORK_DIR', workDir: config.workDir });
+            dispatch({ type: 'SET_COLUMNS', columns });
           })
           .catch(() => {});
       }
@@ -123,6 +126,7 @@ export default function App() {
           <OfficeView agents={state.agents} />
         ) : (
           <Board
+            columns={state.columns}
             cards={state.cards}
             agents={state.agents}
             onCardClick={(id) => dispatch({ type: 'OPEN_CARD', id })}
@@ -145,14 +149,15 @@ export default function App() {
 
       {/* Overlays */}
       {state.uiOpenModal === 'new-card' && (
-        <NewCardModal onClose={() => dispatch({ type: 'CLOSE_MODAL' })} />
+        <NewCardModal columns={state.columns} onClose={() => dispatch({ type: 'CLOSE_MODAL' })} />
       )}
       {state.uiOpenModal === 'new-agent' && (
-        <NewAgentModal onClose={() => dispatch({ type: 'CLOSE_MODAL' })} />
+        <NewAgentModal columns={state.columns} onClose={() => dispatch({ type: 'CLOSE_MODAL' })} />
       )}
       {state.uiOpenCardId && (
         <CardDetailDrawer
           cardId={state.uiOpenCardId}
+          columns={state.columns}
           agents={state.agents}
           onClose={() => dispatch({ type: 'CLOSE_CARD' })}
         />
@@ -161,13 +166,16 @@ export default function App() {
         <AgentDetailModal
           agentId={state.uiOpenAgentId}
           agents={state.agents}
+          columns={state.columns}
           onClose={() => dispatch({ type: 'CLOSE_AGENT' })}
         />
       )}
       {settingsOpen && (
         <SettingsModal
           workDir={state.workDir}
+          columns={state.columns}
           onSave={(workDir) => dispatch({ type: 'SET_WORK_DIR', workDir })}
+          onColumnsChange={(columns) => dispatch({ type: 'SET_COLUMNS', columns })}
           onClose={() => setSettingsOpen(false)}
         />
       )}

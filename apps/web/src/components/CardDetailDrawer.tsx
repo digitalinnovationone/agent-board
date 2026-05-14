@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import type { CardDetail, Agent, Column } from '@agent-board/types';
-import { COLUMNS } from '@agent-board/types';
+import type { CardDetail, Agent, ColumnDef } from '@agent-board/types';
 import { api } from '../lib/api';
 import { AgentChip } from './AgentChip';
 
 interface Props {
   cardId: string;
+  columns: ColumnDef[];
   agents: Record<string, Agent>;
   onClose: () => void;
 }
@@ -19,15 +19,15 @@ function timeAgo(ts: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function PipelineStepper({ column }: { column: Column }) {
-  const idx = COLUMNS.indexOf(column);
+function PipelineStepper({ column, columns }: { column: string; columns: ColumnDef[] }) {
+  const idx = columns.findIndex((c) => c.name === column);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto', paddingBottom: 2 }}>
-      {COLUMNS.map((col, i) => {
+      {columns.map((col, i) => {
         const done = i < idx;
         const active = i === idx;
         return (
-          <div key={col} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <div key={col.name} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {i > 0 && (
               <div style={{
                 width: 20, height: 1,
@@ -57,7 +57,7 @@ function PipelineStepper({ column }: { column: Column }) {
                 whiteSpace: 'nowrap',
                 letterSpacing: 'var(--g-tracking-wide)',
               }}>
-                {col}
+                {col.name}
               </span>
             </div>
           </div>
@@ -83,7 +83,7 @@ const ACTIVITY_ICON: Record<string, string> = {
   unblock: '↩',
 };
 
-export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
+export function CardDetailDrawer({ cardId, columns, agents, onClose }: Props) {
   const [detail, setDetail] = useState<CardDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
@@ -192,7 +192,7 @@ export function CardDetailDrawer({ cardId, agents, onClose }: Props) {
             </div>
           </div>
 
-          {detail && <PipelineStepper column={detail.column} />}
+          {detail && <PipelineStepper column={detail.column} columns={columns} />}
           {deleteError && (
             <div style={{ fontSize: 'var(--g-text-xs)', color: 'var(--g-color-warn)', fontFamily: 'var(--g-font-mono)', marginTop: 'var(--g-space-2)' }}>
               {deleteError}

@@ -7,6 +7,7 @@ export type {
   Comment,
   AcceptanceItem,
   Column,
+  ColumnDef,
   Glyph,
   Priority,
   ActivityKind,
@@ -14,12 +15,3 @@ export type {
   StatusSnapshot,
   WsEvent,
 } from '@agent-board/types';
-
-export const COLUMNS = [
-  'Backlog',
-  'Specification',
-  'Development',
-  'Testing',
-  'Deploy',
-  'Done',
-] as const;

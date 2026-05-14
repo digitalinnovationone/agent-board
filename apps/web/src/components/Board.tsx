@@ -1,23 +1,23 @@
-import { COLUMNS } from '@agent-board/types';
-import type { Card, Agent } from '@agent-board/types';
+import type { Card, Agent, ColumnDef } from '@agent-board/types';
 import { Column } from './Column';
 import { api } from '../lib/api';
 
 interface Props {
+  columns: ColumnDef[];
   cards: Record<string, Card>;
   agents: Record<string, Agent>;
   onCardClick: (id: string) => void;
 }
 
-export function Board({ cards, agents, onCardClick }: Props) {
+export function Board({ columns, cards, agents, onCardClick }: Props) {
   const cardsByColumn = Object.fromEntries(
-    COLUMNS.map((col) => [
-      col,
-      Object.values(cards).filter((c) => c.column === col),
+    columns.map((col) => [
+      col.name,
+      Object.values(cards).filter((c) => c.column === col.name),
     ])
   );
 
-  const sortedBacklog = [...cardsByColumn['Backlog']].sort(
+  const sortedBacklog = [...(cardsByColumn['Backlog'] ?? [])].sort(
     (a, b) => (a.backlogPosition ?? 999) - (b.backlogPosition ?? 999)
   );
 
@@ -32,15 +32,16 @@ export function Board({ cards, agents, onCardClick }: Props) {
   return (
     <div className="board-area">
       <div className="board-inner">
-        {COLUMNS.map((col) => (
+        {columns.map((col) => (
           <Column
-            key={col}
-            column={col}
-            cards={col === 'Backlog' ? sortedBacklog : cardsByColumn[col]}
+            key={col.name}
+            column={col.name}
+            wipCap={col.wipCap}
+            cards={col.name === 'Backlog' ? sortedBacklog : (cardsByColumn[col.name] ?? [])}
             agents={agents}
             onCardClick={onCardClick}
-            onReorder={col === 'Backlog' ? handleReorder : undefined}
-            onStart={col === 'Backlog' ? handleStart : undefined}
+            onReorder={col.name === 'Backlog' ? handleReorder : undefined}
+            onStart={col.name === 'Backlog' ? handleStart : undefined}
           />
         ))}
       </div>

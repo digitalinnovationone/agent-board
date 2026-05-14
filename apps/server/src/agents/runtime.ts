@@ -3,7 +3,6 @@ import { bus } from '../events.js';
 import { getDefaultPrompt } from './prompts.js';
 import { runClaudeCli, buildAllowedTools } from './claude-cli.js';
 import type { Agent, CardDetail, Column, Activity, Artifact, Priority, AcceptanceItem } from '../types.js';
-import { COLUMNS } from '../types.js';
 
 interface AgentOutcome {
   advance?: boolean;
@@ -51,9 +50,10 @@ ${comments || '  (none)'}`;
 }
 
 function nextColumn(current: Column): Column | null {
-  const idx = COLUMNS.indexOf(current);
-  if (idx < 0 || idx >= COLUMNS.length - 1) return null;
-  return COLUMNS[idx + 1];
+  const row = db.prepare(
+    'SELECT name FROM columns WHERE position = (SELECT position + 1 FROM columns WHERE name = ?)'
+  ).get(current) as { name: string } | undefined;
+  return row?.name ?? null;
 }
 
 function addActivity(cardId: string, agentId: string, kind: string, verb: string, target: string | null) {

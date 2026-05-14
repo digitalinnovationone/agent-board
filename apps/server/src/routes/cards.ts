@@ -68,7 +68,7 @@ const NewCardBody = z.object({
   description: z.string().default(''),
   priority: z.enum(['L', 'M', 'H']).default('M'),
   acceptance: z.array(z.string()).default([]),
-  startIn: z.enum(['Backlog', 'Specification', 'Development', 'Testing', 'Deploy', 'Done']).optional(),
+  startIn: z.string().optional(),
 });
 
 const PatchCardBody = z.object({

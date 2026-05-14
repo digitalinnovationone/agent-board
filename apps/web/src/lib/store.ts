@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react';
-import type { Agent, Card, CardDetail, StatusSnapshot, WsEvent } from '@agent-board/types';
+import type { Agent, Card, CardDetail, ColumnDef, StatusSnapshot, WsEvent } from '@agent-board/types';
 
 export type WsState = 'connecting' | 'connected' | 'disconnected';
 
@@ -15,6 +15,7 @@ export interface AppState {
   uiOpenModal: 'new-card' | 'new-agent' | null;
   panels: { agentsOpen: boolean; logOpen: boolean };
   workDir: string;
+  columns: ColumnDef[];
 }
 
 const initialStatus: StatusSnapshot = {
@@ -39,6 +40,7 @@ export const initialState: AppState = {
   uiOpenModal: null,
   panels: { agentsOpen: true, logOpen: true },
   workDir: '',
+  columns: [],
 };
 
 type Action =
@@ -59,6 +61,7 @@ type Action =
   | { type: 'TOGGLE_AGENTS_RAIL' }
   | { type: 'TOGGLE_LOG_RAIL' }
   | { type: 'SET_WORK_DIR'; workDir: string }
+  | { type: 'SET_COLUMNS'; columns: ColumnDef[] }
   | { type: 'APPLY_WS_EVENT'; event: WsEvent };
 
 function computeInFlight(cards: Record<string, Card>): number {
@@ -122,6 +125,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, panels: { ...state.panels, logOpen: !state.panels.logOpen } };
     case 'SET_WORK_DIR':
       return { ...state, workDir: action.workDir };
+    case 'SET_COLUMNS':
+      return { ...state, columns: action.columns };
     case 'APPLY_WS_EVENT': {
       const ev = action.event;
       switch (ev.type) {
@@ -179,6 +184,8 @@ function reducer(state: AppState, action: Action): AppState {
         }
         case 'status':
           return { ...state, status: ev.payload };
+        case 'columns:updated':
+          return { ...state, columns: ev.columns };
         default:
           return state;
       }
