@@ -15,6 +15,7 @@ export interface ClaudeCliOptions {
   systemPrompt: string;
   userPrompt: string;
   model?: string;
+  thinkingMode?: 'auto' | 'think' | 'think-hard';
   allowedTools?: string[];
   cwd?: string;
 }
@@ -24,6 +25,7 @@ export async function runClaudeCli(opts: ClaudeCliOptions): Promise<string> {
     systemPrompt,
     userPrompt,
     model = 'claude-sonnet-4-6',
+    thinkingMode = 'auto',
     allowedTools = [],
     cwd = process.cwd(),
   } = opts;
@@ -36,6 +38,12 @@ export async function runClaudeCli(opts: ClaudeCliOptions): Promise<string> {
     '--model', model,
     '--dangerously-skip-permissions',
   ];
+
+  if (thinkingMode === 'think') {
+    args.push('--thinking');
+  } else if (thinkingMode === 'think-hard') {
+    args.push('--thinking', '--budget-tokens', '10000');
+  }
 
   if (systemPrompt) {
     args.push('--system-prompt', systemPrompt);

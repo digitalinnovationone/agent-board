@@ -88,6 +88,12 @@ const agentCols = (db.pragma('table_info(agents)') as { name: string }[]).map((c
 if (!agentCols.includes('avatar')) {
   db.exec('ALTER TABLE agents ADD COLUMN avatar TEXT');
 }
+if (!agentCols.includes('model')) {
+  db.exec("ALTER TABLE agents ADD COLUMN model TEXT NOT NULL DEFAULT 'claude-sonnet-4-6'");
+}
+if (!agentCols.includes('thinking_mode')) {
+  db.exec("ALTER TABLE agents ADD COLUMN thinking_mode TEXT NOT NULL DEFAULT 'auto'");
+}
 
 // Add backlog_position column for manual priority ordering in Backlog lane
 const cardCols = (db.pragma('table_info(cards)') as { name: string }[]).map((c) => c.name);

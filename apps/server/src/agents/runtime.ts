@@ -106,7 +106,8 @@ export async function runAgent(opts: { agent: Agent; card: CardDetail }): Promis
     lastText = await runClaudeCli({
       systemPrompt,
       userPrompt: cardContext,
-      model: 'claude-sonnet-4-6',
+      model: agent.model ?? 'claude-sonnet-4-6',
+      thinkingMode: agent.thinkingMode ?? 'auto',
       allowedTools: claudeTools,
       cwd,
     });

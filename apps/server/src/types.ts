@@ -13,5 +13,6 @@ export type {
   ActivityKind,
   ArtifactKind,
   StatusSnapshot,
+  ThinkingMode,
   WsEvent,
 } from '@agent-board/types';
