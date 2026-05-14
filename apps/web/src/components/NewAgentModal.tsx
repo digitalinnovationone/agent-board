@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import type { Glyph, ColumnDef } from '@agent-board/types';
+import type { Glyph, ColumnDef, ThinkingMode } from '@agent-board/types';
+import { CLAUDE_MODELS } from '@agent-board/types';
 import { AgentChip } from './AgentChip';
 import { api } from '../lib/api';
 
@@ -34,6 +35,8 @@ export function NewAgentModal({ columns, onClose }: Props) {
   const [roleTemplate, setRoleTemplate] = useState<string | null>(null);
   const [role, setRole] = useState('');
   const [ownsColumn, setOwnsColumn] = useState<string | null>(null);
+  const [model, setModel] = useState('claude-sonnet-4-6');
+  const [thinkingMode, setThinkingMode] = useState<ThinkingMode>('auto');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [tools, setTools] = useState<string[]>(['read', 'write']);
   const [submitting, setSubmitting] = useState(false);
@@ -65,6 +68,8 @@ export function NewAgentModal({ columns, onClose }: Props) {
         systemPrompt: systemPrompt || null,
         tools,
         ownsColumn,
+        model,
+        thinkingMode,
       } as Parameters<typeof api.agents.create>[0]);
       onClose();
     } catch (e) {
@@ -169,6 +174,42 @@ export function NewAgentModal({ columns, onClose }: Props) {
                 <option key={col.name} value={col.name}>{col.name}</option>
               ))}
             </select>
+          </div>
+
+          {/* Model & Effort */}
+          <div className="field-row" style={{ alignItems: 'flex-start' }}>
+            <div className="field">
+              <span className="label">Model</span>
+              <div className="pill-group" style={{ flexDirection: 'column', gap: 'var(--g-space-2)' }}>
+                {CLAUDE_MODELS.map((m) => (
+                  <button
+                    key={m.id}
+                    className={`pill${model === m.id ? ' selected' : ''}`}
+                    onClick={() => setModel(m.id)}
+                    type="button"
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <span className="label">Effort</span>
+              <div className="pill-group" style={{ flexDirection: 'column', gap: 'var(--g-space-2)' }}>
+                {(['auto', 'think', 'think-hard'] as ThinkingMode[]).map((t) => (
+                  <button
+                    key={t}
+                    className={`pill${thinkingMode === t ? ' selected' : ''}`}
+                    onClick={() => setThinkingMode(t)}
+                    type="button"
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Role */}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { Agent, Glyph, ColumnDef } from '@agent-board/types';
+import type { Agent, Glyph, ColumnDef, ThinkingMode } from '@agent-board/types';
+import { CLAUDE_MODELS } from '@agent-board/types';
 import { AgentChip } from './AgentChip';
 import { api } from '../lib/api';
 
@@ -26,6 +27,8 @@ export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
   const [avatar, setAvatar] = useState(AVATAR_SEEDS[0]);
   const [role, setRole] = useState('');
   const [ownsColumn, setOwnsColumn] = useState<string | null>(null);
+  const [model, setModel] = useState('claude-sonnet-4-6');
+  const [thinkingMode, setThinkingMode] = useState<ThinkingMode>('auto');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [tools, setTools] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -42,6 +45,8 @@ export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
     setAvatar(a.avatar ?? AVATAR_SEEDS[0]);
     setRole(a.role);
     setOwnsColumn(a.ownsColumn);
+    setModel(a.model ?? 'claude-sonnet-4-6');
+    setThinkingMode(a.thinkingMode ?? 'auto');
     setSystemPrompt(a.systemPrompt ?? '');
     setTools(a.tools);
   };
@@ -70,7 +75,7 @@ export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
       await api.agents.update(agentId, {
         name: name.trim(), role, glyph, hue, avatar,
         systemPrompt: systemPrompt || null,
-        tools, ownsColumn,
+        tools, ownsColumn, model, thinkingMode,
       });
       setMode('view');
     } catch (e) {
@@ -169,6 +174,15 @@ export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
                 <span style={{ fontSize: 'var(--g-text-sm)' }}>{agent.ownsColumn ?? 'None (observer)'}</span>
               </div>
               <div className="field">
+                <span className="label">Model &amp; effort</span>
+                <span style={{ fontSize: 'var(--g-text-sm)', color: 'var(--g-color-text-2)' }}>
+                  {CLAUDE_MODELS.find((m) => m.id === agent.model)?.label ?? agent.model}
+                  {agent.thinkingMode !== 'auto' && (
+                    <span style={{ marginLeft: 8, opacity: 0.6 }}>· {agent.thinkingMode}</span>
+                  )}
+                </span>
+              </div>
+              <div className="field">
                 <span className="label">System prompt</span>
                 <span style={{ fontSize: 'var(--g-text-sm)', whiteSpace: 'pre-wrap', color: agent.systemPrompt ? 'var(--g-color-text)' : 'var(--g-color-text-muted)' }}>
                   {agent.systemPrompt || 'Default (role-based)'}
@@ -251,6 +265,42 @@ export function AgentDetailModal({ agentId, agents, columns, onClose }: Props) {
                     <option key={col.name} value={col.name}>{col.name}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Model & Effort */}
+              <div className="field-row" style={{ alignItems: 'flex-start' }}>
+                <div className="field">
+                  <span className="label">Model</span>
+                  <div className="pill-group" style={{ flexDirection: 'column', gap: 'var(--g-space-2)' }}>
+                    {CLAUDE_MODELS.map((m) => (
+                      <button
+                        key={m.id}
+                        className={`pill${model === m.id ? ' selected' : ''}`}
+                        onClick={() => setModel(m.id)}
+                        type="button"
+                        style={{ justifyContent: 'flex-start' }}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="field">
+                  <span className="label">Effort</span>
+                  <div className="pill-group" style={{ flexDirection: 'column', gap: 'var(--g-space-2)' }}>
+                    {(['auto', 'think', 'think-hard'] as ThinkingMode[]).map((t) => (
+                      <button
+                        key={t}
+                        className={`pill${thinkingMode === t ? ' selected' : ''}`}
+                        onClick={() => setThinkingMode(t)}
+                        type="button"
+                        style={{ justifyContent: 'flex-start' }}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Role */}

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import db from '../db.js';
 import { bus } from '../events.js';
-import type { Agent, Glyph, Column } from '../types.js';
+import type { Agent, Glyph, Column, ThinkingMode } from '../types.js';
 
 function rowToAgent(row: Record<string, unknown>): Agent {
   return {
@@ -15,6 +15,8 @@ function rowToAgent(row: Record<string, unknown>): Agent {
     systemPrompt: row.system_prompt as string | null,
     tools: JSON.parse(row.tools as string),
     ownsColumn: row.owns_column as Column | null,
+    model: (row.model as string | null) ?? 'claude-sonnet-4-6',
+    thinkingMode: ((row.thinking_mode as string | null) ?? 'auto') as ThinkingMode,
     createdAt: row.created_at as number,
     status: 'idle',
   };
@@ -29,6 +31,8 @@ const AgentBody = z.object({
   systemPrompt: z.string().nullable().optional(),
   tools: z.array(z.string()),
   ownsColumn: z.string().nullable().optional(),
+  model: z.string().default('claude-sonnet-4-6'),
+  thinkingMode: z.enum(['auto', 'think', 'think-hard']).default('auto'),
 });
 
 export async function agentRoutes(app: FastifyInstance) {
@@ -43,8 +47,8 @@ export async function agentRoutes(app: FastifyInstance) {
     const now = Date.now();
 
     db.prepare(`
-      INSERT INTO agents (id, name, role, glyph, hue, avatar, system_prompt, tools, owns_column, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO agents (id, name, role, glyph, hue, avatar, system_prompt, tools, owns_column, model, thinking_mode, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       body.name,
@@ -55,6 +59,8 @@ export async function agentRoutes(app: FastifyInstance) {
       body.systemPrompt ?? null,
       JSON.stringify(body.tools),
       body.ownsColumn ?? null,
+      body.model,
+      body.thinkingMode,
       now,
     );
 
@@ -83,6 +89,8 @@ export async function agentRoutes(app: FastifyInstance) {
     if (body.systemPrompt !== undefined) { fields.push('system_prompt = ?'); values.push(body.systemPrompt); }
     if (body.tools !== undefined) { fields.push('tools = ?'); values.push(JSON.stringify(body.tools)); }
     if (body.ownsColumn !== undefined) { fields.push('owns_column = ?'); values.push(body.ownsColumn); }
+    if (body.model !== undefined) { fields.push('model = ?'); values.push(body.model); }
+    if (body.thinkingMode !== undefined) { fields.push('thinking_mode = ?'); values.push(body.thinkingMode); }
 
     if (fields.length === 0) return reply.status(400).send({ error: 'No fields to update' });
     values.push(id);

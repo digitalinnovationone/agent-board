@@ -1,5 +1,13 @@
 export type Column = string;
 
+export type ThinkingMode = 'auto' | 'think' | 'think-hard';
+
+export const CLAUDE_MODELS = [
+  { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
+  { id: 'claude-sonnet-4-6',         label: 'Sonnet 4.6' },
+  { id: 'claude-opus-4-7',           label: 'Opus 4.7'  },
+] as const;
+
 export interface ColumnDef {
   name: string;
   position: number;
@@ -38,6 +46,8 @@ export interface Agent {
   systemPrompt: string | null;
   tools: string[];
   ownsColumn: Column | null;
+  model: string;
+  thinkingMode: ThinkingMode;
   createdAt: number;
   status?: 'idle' | 'working';
   cardId?: string;

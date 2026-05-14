@@ -1,7 +1,7 @@
 import db from '../db.js';
 import { bus } from '../events.js';
 import { runAgent } from './runtime.js';
-import type { Agent, CardDetail, Activity, Artifact, Comment, AcceptanceItem, Column, Glyph, Priority } from '../types.js';
+import type { Agent, CardDetail, Activity, Artifact, Comment, AcceptanceItem, Column, Glyph, Priority, ThinkingMode } from '../types.js';
 
 const activeAgents = new Set<string>(); // agentId → prevent double-pickup
 
@@ -42,6 +42,8 @@ function rowToAgent(row: Record<string, unknown>): Agent {
     systemPrompt: row.system_prompt as string | null,
     tools: JSON.parse(row.tools as string) as string[],
     ownsColumn: row.owns_column as Column | null,
+    model: (row.model as string | null) ?? 'claude-sonnet-4-6',
+    thinkingMode: ((row.thinking_mode as string | null) ?? 'auto') as ThinkingMode,
     createdAt: row.created_at as number,
     status: 'idle',
   };
