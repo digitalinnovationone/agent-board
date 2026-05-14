@@ -65,6 +65,7 @@ export interface Card {
   createdAt: number;
   updatedAt: number;
   backlogPosition: number | null;
+  hidden: boolean;
 }
 
 export interface AcceptanceItem {

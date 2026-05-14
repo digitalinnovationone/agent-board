@@ -14,6 +14,7 @@ export interface AppState {
   uiOpenAgentId: string | null;
   uiOpenModal: 'new-card' | 'new-agent' | null;
   panels: { agentsOpen: boolean; logOpen: boolean };
+  showHidden: boolean;
   workDir: string;
   columns: ColumnDef[];
   activityFeed: ActivityFeedEntry[];
@@ -40,6 +41,7 @@ export const initialState: AppState = {
   uiOpenAgentId: null,
   uiOpenModal: null,
   panels: { agentsOpen: true, logOpen: true },
+  showHidden: false,
   workDir: '',
   columns: [],
   activityFeed: [],
@@ -62,6 +64,7 @@ type Action =
   | { type: 'CLOSE_MODAL' }
   | { type: 'TOGGLE_AGENTS_RAIL' }
   | { type: 'TOGGLE_LOG_RAIL' }
+  | { type: 'TOGGLE_SHOW_HIDDEN' }
   | { type: 'SET_WORK_DIR'; workDir: string }
   | { type: 'SET_COLUMNS'; columns: ColumnDef[] }
   | { type: 'APPLY_WS_EVENT'; event: WsEvent };
@@ -139,6 +142,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, panels: { ...state.panels, agentsOpen: !state.panels.agentsOpen } };
     case 'TOGGLE_LOG_RAIL':
       return { ...state, panels: { ...state.panels, logOpen: !state.panels.logOpen } };
+    case 'TOGGLE_SHOW_HIDDEN':
+      return { ...state, showHidden: !state.showHidden };
     case 'SET_WORK_DIR':
       return { ...state, workDir: action.workDir };
     case 'SET_COLUMNS':

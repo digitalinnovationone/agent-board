@@ -97,6 +97,9 @@ if (!agentCols.includes('thinking_mode')) {
 
 // Add backlog_position column for manual priority ordering in Backlog lane
 const cardCols = (db.pragma('table_info(cards)') as { name: string }[]).map((c) => c.name);
+if (!cardCols.includes('hidden')) {
+  db.exec('ALTER TABLE cards ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0');
+}
 if (!cardCols.includes('backlog_position')) {
   db.exec('ALTER TABLE cards ADD COLUMN backlog_position INTEGER');
   const backlogCards = db.prepare(
