@@ -54,10 +54,12 @@ export async function columnRoutes(app: FastifyInstance) {
     const cardCount = (db.prepare('SELECT COUNT(*) as c FROM cards WHERE column = ?').get(name) as { c: number }).c;
     if (cardCount > 0) return reply.status(409).send({ error: `Column has ${cardCount} card(s) — move or delete them first` });
 
-    const deletedPosition = col.position as number;
     db.transaction(() => {
       db.prepare('DELETE FROM columns WHERE name = ?').run(name);
-      db.prepare('UPDATE columns SET position = position - 1 WHERE position > ?').run(deletedPosition);
+      const remaining = db.prepare('SELECT name FROM columns ORDER BY position ASC').all() as { name: string }[];
+      remaining.forEach((c, i) => {
+        db.prepare('UPDATE columns SET position = ? WHERE name = ?').run(i, c.name);
+      });
     })();
 
     broadcastColumns();
