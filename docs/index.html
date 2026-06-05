@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Board — How it works</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0c0c10;
+      --bg-2:      #111116;
+      --bg-3:      #18181f;
+      --border:    rgba(255,255,255,0.07);
+      --border-2:  rgba(255,255,255,0.12);
+      --text:      #e2e2ea;
+      --text-2:    #9898ab;
+      --text-3:    #5a5a6e;
+      --accent:    #7c6dfa;
+      --accent-2:  #a594ff;
+      --ok:        #34d399;
+      --warn:      #f59e0b;
+      --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --radius:    10px;
+      --radius-lg: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(12,12,16,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 48px;
+      height: 52px;
+    }
+    nav .logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-right: 8px;
+    }
+    nav a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color .15s;
+    }
+    nav a:hover { color: var(--text); }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ── HERO ── */
+    #hero {
+      padding: 96px 0 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: -160px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(124,109,250,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(124,109,250,.1);
+      border: 1px solid rgba(124,109,250,.25);
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(36px, 5vw, 54px);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    h1 span {
+      background: linear-gradient(135deg, var(--accent-2), #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 18px;
+      color: var(--text-2);
+      max-width: 580px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      background: var(--bg-3);
+      border: 1px solid var(--border-2);
+      border-radius: 100px;
+      padding: 5px 12px;
+    }
+    .badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--text-2);
+      max-width: 600px;
+      margin-bottom: 44px;
+      line-height: 1.7;
+    }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .pipeline-step {
+      flex: 1;
+      min-width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .pipeline-step::after {
+      content: '→';
+      position: absolute;
+      right: -10px;
+      top: 28px;
+      color: var(--text-3);
+      font-size: 16px;
+      z-index: 1;
+    }
+    .pipeline-step:last-child::after { display: none; }
+    .pipeline-col {
+      width: 100%;
+      background: var(--bg-3);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius);
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 0 8px;
+      transition: border-color .2s;
+    }
+    .pipeline-col:hover { border-color: var(--accent); }
+    .pipeline-glyph {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .pipeline-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+    }
+    .pipeline-agent {
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
+    }
+    .wip-badge {
+      font-size: 10px;
+      color: var(--text-3);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── AGENTS GRID ── */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .agent-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: border-color .2s, transform .15s;
+    }
+    .agent-card:hover {
+      border-color: var(--border-2);
+      transform: translateY(-2px);
+    }
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .agent-avatar {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .agent-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .agent-role {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .agent-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .agent-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-3);
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 7px;
+    }
+    .tag.column { color: var(--accent); border-color: rgba(124,109,250,.2); }
+
+    /* ── LIFECYCLE ── */
+    .lifecycle {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .lifecycle-step {
+      display: flex;
+      gap: 24px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+    .lifecycle-step::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border-2);
+    }
+    .lifecycle-step:last-child::before { display: none; }
+    .lifecycle-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--bg-3);
+      border: 1.5px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-2);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .lifecycle-body { padding-top: 8px; flex: 1; }
+    .lifecycle-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .lifecycle-desc {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    /* ── CODE BLOCK ── */
+    pre {
+      background: var(--bg-3);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-2);
+      margin: 16px 0;
+    }
+    pre .cm { color: var(--text-3); }
+    pre .kw { color: #c084fc; }
+    pre .st { color: var(--ok); }
+    pre .nm { color: var(--accent-2); }
+    pre .hl { background: rgba(124,109,250,.15); border-radius: 3px; padding: 0 4px; }
+
+    /* ── ARCH DIAGRAM ── */
+    .arch {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-2);
+      overflow-x: auto;
+    }
+    .arch .box {
+      display: inline-block;
+      background: var(--bg-3);
+      border: 1px solid var(--border-2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .arch .arrow { color: var(--text-3); }
+    .arch .hl { color: var(--accent-2); }
+    .arch .ok { color: var(--ok); }
+    .arch .warn { color: var(--warn); }
+
+    /* ── TECH STACK ── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .stack-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .stack-layer {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 6px;
+    }
+    .stack-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stack-version {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-3);
+    }
+
+    /* ── SETUP ── */
+    .setup-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .setup-step {
+      display: flex;
+      gap: 16px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .setup-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .setup-step h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .setup-step p {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    /* ── ENV TABLE ── */
+    .env-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .env-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .env-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-2);
+      vertical-align: top;
+    }
+    .env-table td:first-child {
+      font-family: var(--font-mono);
+      color: var(--accent-2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .env-table tr:last-child td { border-bottom: none; }
+    .env-wrap {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-3);
+    }
+    footer a { color: var(--text-3); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; gap: 16px; }
+      .container { padding: 0 20px; }
+      section { padding: 56px 0; }
+      .pipeline { flex-wrap: nowrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="logo">Agent Board</span>
+  <a href="#what">What</a>
+  <a href="#pipeline">Pipeline</a>
+  <a href="#agents">Agents</a>
+  <a href="#lifecycle">Lifecycle</a>
+  <a href="#arch">Architecture</a>
+  <a href="#setup">Setup</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-tag">Open-source · Local · Claude-powered</div>
+    <h1>A Kanban board run by<br><span>AI agents</span></h1>
+    <p class="hero-desc">
+      You write a user story. Six specialized Claude agents take it from rough idea to deployed feature —
+      writing specs, code, tests, and deployment artifacts — while you watch in real time.
+    </p>
+    <div class="hero-badges">
+      <span class="badge"><span class="dot" style="background:#7c6dfa"></span>React 18 + Vite 5</span>
+      <span class="badge"><span class="dot" style="background:#34d399"></span>Fastify 5 + SQLite</span>
+      <span class="badge"><span class="dot" style="background:#c084fc"></span>Claude via CLI</span>
+      <span class="badge"><span class="dot" style="background:#f59e0b"></span>Real-time WebSocket</span>
+      <span class="badge"><span class="dot" style="background:#60a5fa"></span>pnpm Monorepo</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IS IT -->
+<section id="what">
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <h2>What is it?</h2>
+    <p class="section-desc">
+      Agent Board is a local supervisory dashboard where you observe and guide a fleet of AI agents
+      collaborating on software development tasks. Each card is a user story; each column is a stage owned
+      by a specialized agent.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+        <div style="font-size:24px;margin-bottom:10px;">📋</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">You create, agents deliver</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6;">Write a card title, description, and acceptance criteria. Click Start. Agents handle the rest autonomously.</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+        <div style="font-size:24px;margin-bottom:10px;">🔍</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Full transparency</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6;">Every agent action is logged with timestamps, reasons, and artifacts. Nothing is hidden.</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+        <div style="font-size:24px;margin-bottom:10px;">🎮</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">You stay in control</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6;">Leave comments to steer agents. Unblock stuck cards. Archive completed work. Intervene at any point.</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+        <div style="font-size:24px;margin-bottom:10px;">💾</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">100% local</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6;">SQLite for state. No cloud, no auth, no external services beyond the Anthropic API.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="container">
+    <div class="section-label">Workflow</div>
+    <h2>The pipeline</h2>
+    <p class="section-desc">
+      Cards flow left to right through six columns. Each column has a dedicated agent; when a card enters,
+      the agent automatically picks it up, processes it, and advances it — or blocks it with a reason.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(124,109,250,.12);">▲</div>
+          <div class="pipeline-name">Backlog</div>
+          <div class="pipeline-agent">Planner</div>
+          <div class="wip-badge">cap 10</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(56,189,248,.12);">■</div>
+          <div class="pipeline-name">Specification</div>
+          <div class="pipeline-agent">Scribe</div>
+          <div class="wip-badge">cap 2</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(251,146,60,.12);">◆</div>
+          <div class="pipeline-name">Development</div>
+          <div class="pipeline-agent">Forge + Loom</div>
+          <div class="wip-badge">cap 2</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(248,113,113,.12);">⬡</div>
+          <div class="pipeline-name">Testing</div>
+          <div class="pipeline-agent">Sentinel</div>
+          <div class="wip-badge">cap 2</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(163,230,53,.12);">❯</div>
+          <div class="pipeline-name">Deploy</div>
+          <div class="pipeline-agent">Pilot</div>
+          <div class="wip-badge">cap 2</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-col">
+          <div class="pipeline-glyph" style="background:rgba(52,211,153,.12);">●</div>
+          <div class="pipeline-name">Done</div>
+          <div class="pipeline-agent">—</div>
+          <div class="wip-badge">∞</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--text-3);margin-top:16px;text-align:center;">
+      WIP caps prevent overloading — the board enforces limits per column (except Done). Columns and caps are fully configurable.
+    </p>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents">
+  <div class="container">
+    <div class="section-label">The team</div>
+    <h2>Six specialized agents</h2>
+    <p class="section-desc">
+      Each agent has a distinct role, system prompt, tool allowlist, and column ownership.
+      You can edit all of these — or create your own agents — directly from the board.
+    </p>
+
+    <div class="agents-grid">
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(124,109,250,.15);color:#a594ff;font-size:16px;">▲</div>
+          <div>
+            <div class="agent-name">Planner</div>
+            <div class="agent-role">Product Owner</div>
+          </div>
+        </div>
+        <p class="agent-desc">Refines user stories in the Backlog — clarifies requirements, breaks down acceptance criteria, and prepares cards for downstream agents.</p>
+        <div class="agent-meta">
+          <span class="tag column">Backlog</span>
+          <span class="tag">read</span>
+          <span class="tag">write</span>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(56,189,248,.15);color:#7dd3fc;font-size:16px;">■</div>
+          <div>
+            <div class="agent-name">Scribe</div>
+            <div class="agent-role">Spec Writer</div>
+          </div>
+        </div>
+        <p class="agent-desc">Writes the technical specification artifact — API contracts, data models, component interfaces — before any code is written.</p>
+        <div class="agent-meta">
+          <span class="tag column">Specification</span>
+          <span class="tag">read</span>
+          <span class="tag">write</span>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(251,146,60,.15);color:#fdba74;font-size:16px;">◆</div>
+          <div>
+            <div class="agent-name">Forge</div>
+            <div class="agent-role">Backend Developer</div>
+          </div>
+        </div>
+        <p class="agent-desc">Implements the backend logic — models, APIs, database migrations — following the spec from Scribe. Has bash access to run commands.</p>
+        <div class="agent-meta">
+          <span class="tag column">Development</span>
+          <span class="tag">read</span>
+          <span class="tag">write</span>
+          <span class="tag">bash</span>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(52,211,153,.15);color:#6ee7b7;font-size:16px;">●</div>
+          <div>
+            <div class="agent-name">Loom</div>
+            <div class="agent-role">Frontend Developer</div>
+          </div>
+        </div>
+        <p class="agent-desc">Builds the UI components, wires up API calls, and handles state management on the frontend side of the same Development column.</p>
+        <div class="agent-meta">
+          <span class="tag column">Development</span>
+          <span class="tag">read</span>
+          <span class="tag">write</span>
+          <span class="tag">bash</span>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(248,113,113,.15);color:#fca5a5;font-size:16px;">⬡</div>
+          <div>
+            <div class="agent-name">Sentinel</div>
+            <div class="agent-role">QA / Testing</div>
+          </div>
+        </div>
+        <p class="agent-desc">Runs the test suite, validates acceptance criteria, checks for regressions. Blocks the card if tests fail, with a detailed reason.</p>
+        <div class="agent-meta">
+          <span class="tag column">Testing</span>
+          <span class="tag">read</span>
+          <span class="tag">bash</span>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:rgba(163,230,53,.15);color:#bef264;font-size:16px;">❯</div>
+          <div>
+            <div class="agent-name">Pilot</div>
+            <div class="agent-role">DevOps</div>
+          </div>
+        </div>
+        <p class="agent-desc">Handles the deploy stage — builds artifacts, runs deployment scripts, and confirms that the feature is live before advancing to Done.</p>
+        <div class="agent-meta">
+          <span class="tag column">Deploy</span>
+          <span class="tag">read</span>
+          <span class="tag">write</span>
+          <span class="tag">bash</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIFECYCLE -->
+<section id="lifecycle">
+  <div class="container">
+    <div class="section-label">Card lifecycle</div>
+    <h2>What happens step by step</h2>
+    <p class="section-desc">
+      From the moment you click "Start" to the card landing in Done, here is exactly what the system does.
+    </p>
+
+    <div class="lifecycle">
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">1</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">You create and start a card</div>
+          <div class="lifecycle-desc">
+            Give the card a title, description, and acceptance criteria in the New Card modal.
+            The card lands in <strong>Backlog</strong>. Click <strong>Start</strong> on the first Backlog card
+            to kick off the pipeline — it moves immediately to Specification.
+          </div>
+        </div>
+      </div>
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">2</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">The orchestrator fires <code style="font-size:12px;background:var(--bg-3);padding:1px 6px;border-radius:4px;">card:entered</code></div>
+          <div class="lifecycle-desc">
+            Whenever a card moves to a new column, the server emits a <code style="font-size:12px;background:var(--bg-3);padding:1px 6px;border-radius:4px;">card:entered</code> event.
+            The orchestrator picks it up, finds which agent owns that column, and spawns a Claude CLI subprocess.
+          </div>
+        </div>
+      </div>
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">3</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">Claude receives context and works</div>
+          <div class="lifecycle-desc">
+            The agent runs as <code style="font-size:12px;background:var(--bg-3);padding:1px 6px;border-radius:4px;">claude --print</code> with a system prompt (the agent's role + outcome contract)
+            and a user prompt containing the full card context: title, description, acceptance criteria,
+            activity history, and any comments.
+          </div>
+          <pre><span class="cm"># Card context sent to the agent:</span>
+<span class="nm">## Card US-07: Add dark mode toggle</span>
+
+<span class="kw">Description:</span> Users need a persistent dark/light mode toggle...
+
+<span class="kw">Acceptance criteria:</span>
+- [ ] Toggle visible in header
+- [ ] Preference saved to localStorage
+- [ ] Respects prefers-color-scheme on first visit
+
+<span class="kw">Recent activity:</span>
+→ Scribe wrote spec: "dark-mode-spec.md"</pre>
+        </div>
+      </div>
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">4</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">Agent returns a structured outcome</div>
+          <div class="lifecycle-desc">
+            The agent must end its response with a fenced JSON block. The server parses this to decide what happens next.
+            Missing or malformed outcomes default to advancing the card.
+          </div>
+          <pre><span class="cm">```agent-board-outcome</span>
+{
+  <span class="st">"advance"</span>: <span class="kw">true</span>,
+  <span class="st">"artifacts"</span>: [
+    { <span class="st">"kind"</span>: <span class="st">"spec"</span>, <span class="st">"title"</span>: <span class="st">"dark-mode-spec.md"</span> }
+  ],
+  <span class="st">"acceptanceUpdates"</span>: [<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>]
+}
+<span class="cm">```</span></pre>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:10px 14px;flex:1;min-width:180px;">
+              <div style="font-size:12px;font-weight:700;color:var(--ok);margin-bottom:4px;">advance: true</div>
+              <div style="font-size:12px;color:var(--text-2);">Card moves to next column automatically. Artifacts and acceptance updates are recorded.</div>
+            </div>
+            <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 14px;flex:1;min-width:180px;">
+              <div style="font-size:12px;font-weight:700;color:var(--warn);margin-bottom:4px;">block: true</div>
+              <div style="font-size:12px;color:var(--text-2);">Card stays in current column, marked BLOCKED with the agent's reason. You must unblock manually.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">5</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">Real-time broadcast to the frontend</div>
+          <div class="lifecycle-desc">
+            Every state change — card moved, blocked, artifact added, acceptance item checked — is
+            immediately broadcast over WebSocket. The React store updates without any polling.
+            The Activity Feed panel captures every event with timestamps.
+          </div>
+        </div>
+      </div>
+
+      <div class="lifecycle-step">
+        <div class="lifecycle-num">6</div>
+        <div class="lifecycle-body">
+          <div class="lifecycle-title">You observe, comment, or intervene</div>
+          <div class="lifecycle-desc">
+            Open any card to see its full activity timeline, artifacts, and acceptance criteria.
+            Leave a comment addressed to the next agent to steer their work.
+            If a card is blocked, read the reason and click <strong>Unblock</strong> when ready.
+            Archive completed cards from Done to keep the board clean.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="arch">
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <h2>How it's built</h2>
+    <p class="section-desc">
+      A pnpm monorepo with three packages. The frontend and backend are fully decoupled — they communicate
+      only through REST and WebSocket.
+    </p>
+
+    <div class="arch">
+<span class="hl">Browser (React + Vite :5173)</span>
+│
+│  REST   <span class="arrow">──────────────────►</span>  <span class="hl">Fastify API :4000</span>
+│                                     │
+│  WebSocket  <span class="arrow">◄────────────────</span>  │  <span class="ok">• /api/cards</span>
+│                                     │  <span class="ok">• /api/agents</span>
+│                                     │  <span class="ok">• /api/columns</span>
+│                                     │  <span class="ok">• /api/config</span>
+│                                     │
+│                                     │
+│                               <span class="hl">Orchestrator</span>
+│                               (event bus)
+│                                     │
+│                                     │  card:entered
+│                                     ▼
+│                               <span class="hl">Agent Runtime</span>
+│                                     │
+│                                     │  <span class="warn">claude --print</span> subprocess
+│                                     │  (per card, per column)
+│                                     ▼
+│                               <span class="hl">Claude CLI</span>
+│                               (Anthropic API)
+│                                     │
+│                                     │  structured outcome JSON
+│                                     ▼
+│                               <span class="hl">SQLite (WAL)</span>
+│                               data/agent-board.db
+│
+└── Shared types: <span class="ok">@agent-board/types</span>
+    (Card, Agent, Column, WsEvent, ...)
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:24px;">
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;">apps/web</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">React 18 + Vite 5. Custom Graphite design system with CSS variables. No UI library — pure hand-crafted components.</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;">apps/server</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Fastify 5 + better-sqlite3. Zod for body validation. Event bus (EventEmitter) for orchestration. WAL mode for concurrent reads.</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;">packages/types</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;">Shared TypeScript interfaces: Card, Agent, ColumnDef, WsEvent, CardDetail. Both apps import from here — one source of truth.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="container">
+    <div class="section-label">Tech stack</div>
+    <h2>Dependencies</h2>
+    <p class="section-desc">Minimal surface area — no framework bloat, no cloud dependencies.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-layer">Frontend</div>
+        <div class="stack-name">React</div>
+        <div class="stack-version">18.3.1</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Build</div>
+        <div class="stack-name">Vite</div>
+        <div class="stack-version">5.4.19</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Backend</div>
+        <div class="stack-name">Fastify</div>
+        <div class="stack-version">5.3.2</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Database</div>
+        <div class="stack-name">better-sqlite3</div>
+        <div class="stack-version">11.9.1</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Validation</div>
+        <div class="stack-name">Zod</div>
+        <div class="stack-version">4.3.6</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Real-time</div>
+        <div class="stack-name">@fastify/websocket</div>
+        <div class="stack-version">11.0.2</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">Language</div>
+        <div class="stack-name">TypeScript</div>
+        <div class="stack-version">5.8.3</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-layer">AI Runtime</div>
+        <div class="stack-name">Claude CLI</div>
+        <div class="stack-version">claude --print</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="container">
+    <div class="section-label">Getting started</div>
+    <h2>Setup in 3 steps</h2>
+    <p class="section-desc">Prerequisites: Node.js ≥ 20, pnpm, and the Claude Code CLI installed and authenticated.</p>
+
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="setup-icon">📦</div>
+        <div style="flex:1">
+          <h4>Install dependencies</h4>
+          <p>From the repo root, install all workspace packages at once.</p>
+          <pre style="margin:0">pnpm install</pre>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-icon">🔑</div>
+        <div style="flex:1">
+          <h4>Configure API key</h4>
+          <p>Skip this step if you're already authenticated via <code style="font-size:12px;background:var(--bg-3);padding:1px 6px;border-radius:4px;">claude login</code>.</p>
+          <pre style="margin:0">cp .env.example .env
+<span class="cm"># Edit .env:</span>
+ANTHROPIC_API_KEY=sk-ant-...</pre>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-icon">🚀</div>
+        <div style="flex:1">
+          <h4>Start the dev server</h4>
+          <p>Starts both the frontend (port 5173) and backend (port 4000) in parallel.</p>
+          <pre style="margin:0">pnpm dev</pre>
+          <p style="margin-top:8px;margin-bottom:0;">Open <strong style="color:var(--accent-2)">http://localhost:5173</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Environment variables</div>
+      <div class="env-wrap">
+        <table class="env-table">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ANTHROPIC_API_KEY</td>
+              <td style="font-family:var(--font-mono);font-size:12px;color:var(--text-3);">—</td>
+              <td>Required unless authenticated via <code style="font-size:12px;background:var(--bg-3);padding:1px 5px;border-radius:4px;">claude login</code></td>
+            </tr>
+            <tr>
+              <td>CLAUDE_CODE_BIN</td>
+              <td style="font-family:var(--font-mono);font-size:12px;color:var(--text-3);">claude</td>
+              <td>Path to the Claude CLI binary if not in PATH</td>
+            </tr>
+            <tr>
+              <td>CLAUDE_CODE_WORK_DIR</td>
+              <td style="font-family:var(--font-mono);font-size:12px;color:var(--text-3);">process.cwd()</td>
+              <td>Directory where agents perform file read/write/bash operations. Also configurable at runtime via Settings in the UI.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>Agent Board · <a href="https://github.com/digitalinnovationone/agent-board" target="_blank">github.com/digitalinnovationone/agent-board</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
